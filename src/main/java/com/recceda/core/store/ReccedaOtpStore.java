@@ -59,7 +59,8 @@ public class ReccedaOtpStore implements OtpStore {
         }
     }
 
-    public static class OtpEntry {
+    public static class OtpEntry implements java.io.Serializable {
+        private static final long serialVersionUID = 1L;
         public String otpHash;
         public long expiryTime;
 
