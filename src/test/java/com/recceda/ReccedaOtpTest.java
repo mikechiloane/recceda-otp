@@ -2,18 +2,23 @@ package com.recceda;
 
 import com.recceda.core.distributor.OtpDistributor;
 import com.recceda.core.generator.OtpGenerator;
+import com.recceda.core.policy.GenerationPolicy;
+import com.recceda.core.reason.OtpReason;
 import com.recceda.core.store.OtpStore;
+import com.recceda.exception.OtpGenerationException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class ReccedaOtpTest {
 
     @Mock
@@ -22,65 +27,77 @@ class ReccedaOtpTest {
     @Mock
     private OtpStore otpStore;
 
-    @InjectMocks
     private ReccedaOtp reccedaOtp;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void generateOtpShouldCallGeneratorAndStoreAndDistributor() {
         // Given
+        reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Collections.emptyList());
         String key = "test-user";
+        OtpReason reason = OtpReason.LOGIN;
         String generatedOtp = "123456";
         OtpDistributor distributor = (k, o) -> {};
         when(otpGenerator.generateOtp(6)).thenReturn(generatedOtp);
 
         // When
-        reccedaOtp.generateOtp(key, distributor);
+        reccedaOtp.generateOtp(key, reason, distributor);
 
         // Then
         verify(otpGenerator).generateOtp(6);
-        verify(otpStore).storeOtp(key, generatedOtp, 300000L);
+        verify(otpStore).storeOtp(key, generatedOtp, 300000L, reason);
     }
 
     @Test
-    void generateOtpWithLengthAndTtlShouldCallGeneratorAndStore() {
+    void generateOtpShouldCheckPolicies() {
         // Given
+        GenerationPolicy policy = mock(GenerationPolicy.class);
+        reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Arrays.asList(policy));
         String key = "test-user";
-        String generatedOtp = "98765432";
+        OtpReason reason = OtpReason.LOGIN;
         OtpDistributor distributor = (k, o) -> {};
-        when(otpGenerator.generateOtp(8)).thenReturn(generatedOtp);
 
         // When
-        reccedaOtp.generateOtp(key, 8, 600000L, distributor);
+        reccedaOtp.generateOtp(key, reason, distributor);
 
         // Then
-        verify(otpGenerator).generateOtp(8);
-        verify(otpStore).storeOtp(key, generatedOtp, 600000L);
+        verify(policy).check(key, reason, otpStore);
+    }
+
+    @Test
+    void generateOtpShouldThrowExceptionWhenPolicyFails() {
+        // Given
+        GenerationPolicy policy = mock(GenerationPolicy.class);
+        doThrow(new OtpGenerationException("Policy failed")).when(policy).check(any(), any(), any());
+        reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Arrays.asList(policy));
+        String key = "test-user";
+        OtpReason reason = OtpReason.LOGIN;
+        OtpDistributor distributor = (k, o) -> {};
+
+        // Then
+        assertThrows(OtpGenerationException.class, () -> {
+            reccedaOtp.generateOtp(key, reason, distributor);
+        });
     }
 
     @Test
     void verifyOtpShouldCallStore() {
         // Given
+        reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Collections.emptyList());
         String key = "test-user";
         String otp = "123456";
-        when(otpStore.verifyOtp(key, otp)).thenReturn(true);
+        OtpReason reason = OtpReason.LOGIN;
+        when(otpStore.verifyOtp(key, otp, reason)).thenReturn(true);
 
         // When
-        boolean result = reccedaOtp.verifyOtp(key, otp);
+        boolean result = reccedaOtp.verifyOtp(key, otp, reason);
 
         // Then
         assertTrue(result);
-        verify(otpStore).verifyOtp(key, otp);
-    }
-
-    @Test
-    void invalidateOtpShouldCallStore() {
-        // Given
-        String key = "test-user";
-
-        // When
-        reccedaOtp.invalidateOtp(key);
-
-        // Then
-        verify(otpStore).invalidateOtp(key);
+        verify(otpStore).verifyOtp(key, otp, reason);
     }
 }
