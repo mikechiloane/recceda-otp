@@ -1,26 +1,40 @@
 package com.recceda.core.store;
 
-import net.openhft.chronicle.map.ChronicleMap;
-
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Expiry;
 import com.recceda.core.reason.OtpReason;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.concurrent.TimeUnit;
 
 public class ReccedaOtpStore implements OtpStore {
 
-    private final ChronicleMap<String, OtpEntry> otpMap;
+    private final Cache<String, OtpEntry> otpMap;
 
     public ReccedaOtpStore() {
-        this.otpMap = ChronicleMap
-                .of(String.class, OtpEntry.class)
-                .name("otp-store")
-                .averageKeySize(50)
-                .averageValue(new OtpEntry("", 0, OtpReason.LOGIN))
-                .entries(1000)
-                .create();
+        this.otpMap = Caffeine.newBuilder()
+                .expireAfter(new Expiry<String, OtpEntry>() {
+                    @Override
+                    public long expireAfterCreate(String key, OtpEntry value, long currentTime) {
+                        long millis = value.expiryTime - System.currentTimeMillis();
+                        return TimeUnit.MILLISECONDS.toNanos(millis);
+                    }
+
+                    @Override
+                    public long expireAfterUpdate(String key, OtpEntry value, long currentTime, long currentDuration) {
+                        return currentDuration;
+                    }
+
+                    @Override
+                    public long expireAfterRead(String key, OtpEntry value, long currentTime, long currentDuration) {
+                        return currentDuration;
+                    }
+                })
+                .build();
     }
 
     @Override
@@ -34,8 +48,8 @@ public class ReccedaOtpStore implements OtpStore {
     @Override
     public boolean verifyOtp(String key, String otp, OtpReason reason) {
         String compositeKey = key + ":" + reason.name();
-        OtpEntry entry = otpMap.get(compositeKey);
-        if (entry == null || entry.expiryTime < System.currentTimeMillis()) {
+        OtpEntry entry = otpMap.getIfPresent(compositeKey);
+        if (entry == null) {
             return false;
         }
 
@@ -51,20 +65,16 @@ public class ReccedaOtpStore implements OtpStore {
     @Override
     public OtpEntry getOtpEntry(String key, OtpReason reason) {
         String compositeKey = key + ":" + reason.name();
-        return otpMap.get(compositeKey);
+        return otpMap.getIfPresent(compositeKey);
     }
 
     @Override
     public void invalidateOtp(String key, OtpReason reason) {
         String compositeKey = key + ":" + reason.name();
-        otpMap.remove(compositeKey);
+        otpMap.invalidate(compositeKey);
     }
 
-    @Override
-    public void cleanupExpiredOtps() {
-        long currentTime = System.currentTimeMillis();
-        otpMap.entrySet().removeIf(entry -> entry.getValue().expiryTime < currentTime);
-    }
+    
 
     private String hashOtp(String otp) {
         try {
@@ -76,8 +86,7 @@ public class ReccedaOtpStore implements OtpStore {
         }
     }
 
-    public static class OtpEntry implements java.io.Serializable {
-        private static final long serialVersionUID = 2L; // Incremented serialVersionUID
+    public static class OtpEntry {
         public String otpHash;
         public long expiryTime;
         public OtpReason reason;

@@ -8,5 +8,5 @@ public interface OtpStore {
     boolean verifyOtp(String key, String otp, OtpReason reason);
     OtpEntry getOtpEntry(String key, OtpReason reason);
     void invalidateOtp(String key, OtpReason reason);
-    void cleanupExpiredOtps();
+    
 }

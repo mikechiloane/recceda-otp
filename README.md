@@ -13,6 +13,7 @@ A simple, secure, and configurable One-Time Password (OTP) generation and verifi
 *   **Secure Storage**: Stores OTPs using a secure SHA-256 hash, not in plain text.
 *   **Configurable Generation Policies**: Enforce rules for OTP generation, such as preventing duplicate OTPs or limiting failed attempts.
 *   **Flexible Distribution**: Callback mechanism allows for easy integration with any distribution method (SMS, email, etc.).
+*   **In-Memory Storage**: Utilizes the high-performance [Caffeine](https://github.com/ben-manes/caffeine) library for fast and efficient in-memory storage.
 *   **Thread-Safe**: The OTP store is designed for concurrent use in multi-threaded environments.
 
 ## Installation
@@ -23,7 +24,7 @@ To use this library in your project, add the following dependency to your `pom.x
 <dependency>
   <groupId>com.recceda</groupId>
   <artifactId>recceda-otp</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.2</version>
 </dependency>
 ```
 

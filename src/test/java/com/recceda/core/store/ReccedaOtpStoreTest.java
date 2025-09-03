@@ -59,13 +59,5 @@ class ReccedaOtpStoreTest {
         assertFalse(otpStore.verifyOtp("testKey", "123456", OtpReason.LOGIN));
     }
 
-    @Test
-    void testCleanupExpiredOtps() throws InterruptedException {
-        otpStore.storeOtp("key1", "111111", 1, OtpReason.LOGIN);
-        otpStore.storeOtp("key2", "222222", 10000, OtpReason.SIGNUP);
-        Thread.sleep(10);
-        otpStore.cleanupExpiredOtps();
-        assertFalse(otpStore.verifyOtp("key1", "111111", OtpReason.LOGIN));
-        assertTrue(otpStore.verifyOtp("key2", "222222", OtpReason.SIGNUP));
-    }
+    
 }
