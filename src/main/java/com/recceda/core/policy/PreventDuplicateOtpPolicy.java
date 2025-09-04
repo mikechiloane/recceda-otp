@@ -7,11 +7,11 @@ import com.recceda.exception.OtpGenerationException;
 
 public class PreventDuplicateOtpPolicy implements GenerationPolicy {
 
-    @Override
-    public void check(String key, OtpReason reason, OtpStore store) {
-        OtpEntry entry = store.getOtpEntry(key, reason);
-        if (entry != null && entry.expiryTime > System.currentTimeMillis()) {
-            throw new OtpGenerationException("An active OTP already exists for this user and reason.");
-        }
+  @Override
+  public void check(String key, OtpReason reason, OtpStore store) {
+    OtpEntry entry = store.getOtpEntry(key, reason);
+    if (entry != null && entry.expiryTime > System.currentTimeMillis()) {
+      throw new OtpGenerationException("An active OTP already exists for this user and reason.");
     }
+  }
 }

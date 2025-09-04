@@ -7,17 +7,18 @@ import com.recceda.exception.OtpGenerationException;
 
 public class MaxFailedAttemptsPolicy implements GenerationPolicy {
 
-    private final int maxAttempts;
+  private final int maxAttempts;
 
-    public MaxFailedAttemptsPolicy(int maxAttempts) {
-        this.maxAttempts = maxAttempts;
-    }
+  public MaxFailedAttemptsPolicy(int maxAttempts) {
+    this.maxAttempts = maxAttempts;
+  }
 
-    @Override
-    public void check(String key, OtpReason reason, OtpStore store) {
-        OtpEntry entry = store.getOtpEntry(key, reason);
-        if (entry != null && entry.failedAttempts >= maxAttempts) {
-            throw new OtpGenerationException("User has exceeded the maximum number of failed OTP attempts for this reason.");
-        }
+  @Override
+  public void check(String key, OtpReason reason, OtpStore store) {
+    OtpEntry entry = store.getOtpEntry(key, reason);
+    if (entry != null && entry.failedAttempts >= maxAttempts) {
+      throw new OtpGenerationException(
+          "User has exceeded the maximum number of failed OTP attempts for this reason.");
     }
+  }
 }
