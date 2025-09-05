@@ -5,10 +5,19 @@ import com.recceda.core.store.OtpStore;
 import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
 import com.recceda.exception.OtpGenerationException;
 
+/**
+ * A policy that prevents OTP generation if the user has exceeded the maximum number of failed
+ * verification attempts for a given reason.
+ */
 public class MaxFailedAttemptsPolicy implements Policy {
 
   private final int maxAttempts;
 
+  /**
+   * Creates a new {@code MaxFailedAttemptsPolicy} with the specified maximum number of attempts.
+   *
+   * @param maxAttempts the maximum number of failed attempts allowed.
+   */
   public MaxFailedAttemptsPolicy(int maxAttempts) {
     this.maxAttempts = maxAttempts;
   }

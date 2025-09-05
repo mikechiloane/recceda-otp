@@ -10,10 +10,22 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * An in-memory OTP store that uses a Caffeine cache for high-performance, concurrent access.
+ *
+ * <p>This class is responsible for storing, verifying, and invalidating OTPs. It uses a secure
+ * SHA-256 hash to store OTPs and relies on the Caffeine library's time-based eviction for
+ * automatic cleanup of expired OTPs.
+ */
 public class ReccedaOtpStore implements OtpStore {
 
   private final Cache<String, OtpEntry> otpMap;
 
+  /**
+   * Creates a new {@code ReccedaOtpStore} with the default expiry policy.
+   *
+   * <p>The default policy expires entries based on the `expiryTime` in the {@link OtpEntry}.
+   */
   public ReccedaOtpStore() {
     this(
         new Expiry<String, OtpEntry>() {
@@ -37,6 +49,11 @@ public class ReccedaOtpStore implements OtpStore {
         });
   }
 
+  /**
+   * Creates a new {@code ReccedaOtpStore} with a custom expiry policy.
+   *
+   * @param expiry the custom expiry policy to use for the Caffeine cache.
+   */
   public ReccedaOtpStore(Expiry<String, OtpEntry> expiry) {
     this.otpMap = Caffeine.newBuilder().expireAfter(expiry).build();
   }

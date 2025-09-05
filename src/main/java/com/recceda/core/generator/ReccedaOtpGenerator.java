@@ -2,6 +2,10 @@ package com.recceda.core.generator;
 
 import java.security.SecureRandom;
 
+/**
+ * The default OTP generator, which uses {@link java.security.SecureRandom} to create a
+ * cryptographically strong, random OTP.
+ */
 public class ReccedaOtpGenerator implements OtpGenerator {
   private final SecureRandom secureRandom = new SecureRandom();
 
