@@ -36,9 +36,10 @@ Here is a simple example of how to generate and verify an OTP for a user.
 import com.recceda.ReccedaOtp;
 import com.recceda.core.store.OtpStore;
 import com.recceda.core.store.ReccedaOtpStore;
-import com.recceda.core.policy.GenerationPolicy;
+import com.recceda.core.policy.Policy;
 import com.recceda.core.policy.PreventDuplicateOtpPolicy;
 import com.recceda.core.reason.OtpReason;
+
 import java.util.List;
 import java.util.Arrays;
 
@@ -49,7 +50,7 @@ public class Example {
         OtpStore otpStore = new ReccedaOtpStore();
 
         // 2. Define the generation policies you want to enforce.
-        List<GenerationPolicy> policies = Arrays.asList(new PreventDuplicateOtpPolicy());
+        List<Policy> policies = Arrays.asList(new PreventDuplicateOtpPolicy());
 
         // 3. Create the main ReccedaOtp object, injecting the store and policies.
         ReccedaOtp reccedaOtp = new ReccedaOtp(otpStore, policies);

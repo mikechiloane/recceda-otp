@@ -4,6 +4,6 @@ import com.recceda.core.reason.OtpReason;
 import com.recceda.core.store.OtpStore;
 
 @FunctionalInterface
-public interface GenerationPolicy {
+public interface Policy {
   void check(String key, OtpReason reason, OtpStore store);
 }

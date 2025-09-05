@@ -5,7 +5,7 @@ import com.recceda.core.store.OtpStore;
 import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
 import com.recceda.exception.OtpGenerationException;
 
-public class PreventDuplicateOtpPolicy implements GenerationPolicy {
+public class PreventDuplicateOtpPolicy implements Policy {
 
   @Override
   public void check(String key, OtpReason reason, OtpStore store) {

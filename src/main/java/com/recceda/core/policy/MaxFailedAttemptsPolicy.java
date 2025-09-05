@@ -5,7 +5,7 @@ import com.recceda.core.store.OtpStore;
 import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
 import com.recceda.exception.OtpGenerationException;
 
-public class MaxFailedAttemptsPolicy implements GenerationPolicy {
+public class MaxFailedAttemptsPolicy implements Policy {
 
   private final int maxAttempts;
 

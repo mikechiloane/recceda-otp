@@ -15,29 +15,30 @@ public class ReccedaOtpStore implements OtpStore {
   private final Cache<String, OtpEntry> otpMap;
 
   public ReccedaOtpStore() {
-    this.otpMap =
-        Caffeine.newBuilder()
-            .expireAfter(
-                new Expiry<String, OtpEntry>() {
-                  @Override
-                  public long expireAfterCreate(String key, OtpEntry value, long currentTime) {
-                    long millis = value.expiryTime - System.currentTimeMillis();
-                    return TimeUnit.MILLISECONDS.toNanos(millis);
-                  }
+    this(
+        new Expiry<String, OtpEntry>() {
+          @Override
+          public long expireAfterCreate(String key, OtpEntry value, long currentTime) {
+            long millis = value.expiryTime - System.currentTimeMillis();
+            return TimeUnit.MILLISECONDS.toNanos(millis);
+          }
 
-                  @Override
-                  public long expireAfterUpdate(
-                      String key, OtpEntry value, long currentTime, long currentDuration) {
-                    return currentDuration;
-                  }
+          @Override
+          public long expireAfterUpdate(
+              String key, OtpEntry value, long currentTime, long currentDuration) {
+            return currentDuration;
+          }
 
-                  @Override
-                  public long expireAfterRead(
-                      String key, OtpEntry value, long currentTime, long currentDuration) {
-                    return currentDuration;
-                  }
-                })
-            .build();
+          @Override
+          public long expireAfterRead(
+              String key, OtpEntry value, long currentTime, long currentDuration) {
+            return currentDuration;
+          }
+        });
+  }
+
+  public ReccedaOtpStore(Expiry<String, OtpEntry> expiry) {
+    this.otpMap = Caffeine.newBuilder().expireAfter(expiry).build();
   }
 
   @Override

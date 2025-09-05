@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import com.recceda.core.distributor.OtpDistributor;
 import com.recceda.core.generator.OtpGenerator;
-import com.recceda.core.policy.GenerationPolicy;
+import com.recceda.core.policy.Policy;
 import com.recceda.core.reason.OtpReason;
 import com.recceda.core.store.OtpStore;
 import com.recceda.exception.OtpGenerationException;
@@ -51,7 +51,7 @@ class ReccedaOtpTest {
   @Test
   void generateOtpShouldCheckPolicies() {
     // Given
-    GenerationPolicy policy = mock(GenerationPolicy.class);
+    Policy policy = mock(Policy.class);
     reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Arrays.asList(policy));
     String key = "test-user";
     OtpReason reason = OtpReason.LOGIN;
@@ -67,7 +67,7 @@ class ReccedaOtpTest {
   @Test
   void generateOtpShouldThrowExceptionWhenPolicyFails() {
     // Given
-    GenerationPolicy policy = mock(GenerationPolicy.class);
+    Policy policy = mock(Policy.class);
     doThrow(new OtpGenerationException("Policy failed")).when(policy).check(any(), any(), any());
     reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Arrays.asList(policy));
     String key = "test-user";
