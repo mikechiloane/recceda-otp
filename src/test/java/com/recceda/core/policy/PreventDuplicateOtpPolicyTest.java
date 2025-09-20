@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import com.recceda.core.reason.OtpReason;
 import com.recceda.core.store.OtpStore;
 import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
 import com.recceda.exception.OtpGenerationException;
@@ -24,15 +23,14 @@ class PreventDuplicateOtpPolicyTest {
   void shouldThrowExceptionWhenActiveOtpExists() {
     // Given
     String key = "test-user";
-    OtpReason reason = OtpReason.LOGIN;
-    OtpEntry activeEntry = new OtpEntry("hash", System.currentTimeMillis() + 10000, reason);
-    when(otpStore.getOtpEntry(key, reason)).thenReturn(activeEntry);
+    OtpEntry activeEntry = new OtpEntry("hash", System.currentTimeMillis() + 10000);
+    when(otpStore.getOtpEntry(key)).thenReturn(activeEntry);
 
     // Then
     assertThrows(
         OtpGenerationException.class,
         () -> {
-          policy.check(key, reason, otpStore);
+          policy.check(key, otpStore);
         });
   }
 
@@ -40,13 +38,12 @@ class PreventDuplicateOtpPolicyTest {
   void shouldNotThrowExceptionWhenNoActiveOtpExists() {
     // Given
     String key = "test-user";
-    OtpReason reason = OtpReason.LOGIN;
-    when(otpStore.getOtpEntry(key, reason)).thenReturn(null);
+    when(otpStore.getOtpEntry(key)).thenReturn(null);
 
     // Then
     assertDoesNotThrow(
         () -> {
-          policy.check(key, reason, otpStore);
+          policy.check(key, otpStore);
         });
   }
 
@@ -54,14 +51,13 @@ class PreventDuplicateOtpPolicyTest {
   void shouldNotThrowExceptionWhenOtpIsExpired() {
     // Given
     String key = "test-user";
-    OtpReason reason = OtpReason.LOGIN;
-    OtpEntry expiredEntry = new OtpEntry("hash", System.currentTimeMillis() - 10000, reason);
-    when(otpStore.getOtpEntry(key, reason)).thenReturn(expiredEntry);
+    OtpEntry expiredEntry = new OtpEntry("hash", System.currentTimeMillis() - 10000);
+    when(otpStore.getOtpEntry(key)).thenReturn(expiredEntry);
 
     // Then
     assertDoesNotThrow(
         () -> {
-          policy.check(key, reason, otpStore);
+          policy.check(key, otpStore);
         });
   }
 }

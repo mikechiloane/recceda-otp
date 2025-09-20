@@ -4,7 +4,6 @@ import com.recceda.core.distributor.OtpDistributor;
 import com.recceda.core.generator.OtpGenerator;
 import com.recceda.core.generator.ReccedaOtpGenerator;
 import com.recceda.core.policy.Policy;
-import com.recceda.core.reason.OtpReason;
 import com.recceda.core.store.OtpStore;
 import java.util.Collections;
 import java.util.List;
@@ -58,12 +57,11 @@ public class ReccedaOtp {
    * user via the provided distributor.
    *
    * @param key the unique key to associate with the OTP (e.g., user ID, email address).
-   * @param reason the reason for generating the OTP.
    * @param distributor the distributor to use for sending the OTP.
    */
-  public void generateOtp(String key, OtpReason reason, OtpDistributor distributor) {
+  public void generateOtp(String key, OtpDistributor distributor) {
     // Default to a 6-digit OTP with a 5-minute validity
-    generateOtp(key, reason, 6, 5 * 60 * 1000, distributor);
+    generateOtp(key, 6, 5 * 60 * 1000, distributor);
   }
 
   /**
@@ -71,41 +69,37 @@ public class ReccedaOtp {
    * via the provided distributor.
    *
    * @param key the unique key to associate with the OTP (e.g., user ID, email address).
-   * @param reason the reason for generating the OTP.
    * @param length the length of the OTP to generate.
    * @param ttlMillis the time-to-live for the OTP in milliseconds.
    * @param distributor the distributor to use for sending the OTP.
    */
-  public void generateOtp(
-      String key, OtpReason reason, int length, long ttlMillis, OtpDistributor distributor) {
+  public void generateOtp(String key, int length, long ttlMillis, OtpDistributor distributor) {
     for (Policy policy : policies) {
-      policy.check(key, reason, otpStore);
+      policy.check(key, otpStore);
     }
 
     String otp = otpGenerator.generateOtp(length);
-    otpStore.storeOtp(key, otp, ttlMillis, reason);
+    otpStore.storeOtp(key, otp, ttlMillis);
     distributor.send(key, otp);
   }
 
   /**
-   * Verifies the given OTP for the specified key and reason.
+   * Verifies the given OTP for the specified key.
    *
    * @param key the unique key associated with the OTP.
    * @param otp the OTP to verify.
-   * @param reason the reason for which the OTP was generated.
    * @return {@code true} if the OTP is valid, {@code false} otherwise.
    */
-  public boolean verifyOtp(String key, String otp, OtpReason reason) {
-    return otpStore.verifyOtp(key, otp, reason);
+  public boolean verifyOtp(String key, String otp) {
+    return otpStore.verifyOtp(key, otp);
   }
 
   /**
-   * Invalidates the current OTP for the specified key and reason.
+   * Invalidates the current OTP for the specified key.
    *
    * @param key the unique key associated with the OTP.
-   * @param reason the reason for which the OTP was generated.
    */
-  public void invalidateOtp(String key, OtpReason reason) {
-    otpStore.invalidateOtp(key, reason);
+  public void invalidateOtp(String key) {
+    otpStore.invalidateOtp(key);
   }
 }

@@ -2,7 +2,6 @@ package com.recceda.core.store;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.recceda.core.reason.OtpReason;
 import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,44 +17,44 @@ class ReccedaOtpStoreTest {
 
   @Test
   void testStoreAndVerifyOtp() {
-    otpStore.storeOtp("testKey", "123456", 1000, OtpReason.LOGIN);
-    assertTrue(otpStore.verifyOtp("testKey", "123456", OtpReason.LOGIN));
+    otpStore.storeOtp("testKey", "123456", 1000);
+    assertTrue(otpStore.verifyOtp("testKey", "123456"));
   }
 
   @Test
   void testVerifyIncorrectOtpIncrementsFailedAttempts() {
-    otpStore.storeOtp("testKey", "123456", 1000, OtpReason.LOGIN);
-    assertFalse(otpStore.verifyOtp("testKey", "654321", OtpReason.LOGIN));
+    otpStore.storeOtp("testKey", "123456", 1000);
+    assertFalse(otpStore.verifyOtp("testKey", "654321"));
 
-    OtpEntry entry = otpStore.getOtpEntry("testKey", OtpReason.LOGIN);
+    OtpEntry entry = otpStore.getOtpEntry("testKey");
     assertEquals(1, entry.failedAttempts);
 
-    assertFalse(otpStore.verifyOtp("testKey", "000000", OtpReason.LOGIN));
-    entry = otpStore.getOtpEntry("testKey", OtpReason.LOGIN);
+    assertFalse(otpStore.verifyOtp("testKey", "000000"));
+    entry = otpStore.getOtpEntry("testKey");
     assertEquals(2, entry.failedAttempts);
   }
 
   @Test
   void testStoreNewOtpResetsFailedAttempts() {
-    otpStore.storeOtp("testKey", "123456", 1000, OtpReason.LOGIN);
-    otpStore.verifyOtp("testKey", "654321", OtpReason.LOGIN); // Fail once
+    otpStore.storeOtp("testKey", "123456", 1000);
+    otpStore.verifyOtp("testKey", "654321"); // Fail once
 
-    otpStore.storeOtp("testKey", "new-otp", 1000, OtpReason.LOGIN);
-    OtpEntry entry = otpStore.getOtpEntry("testKey", OtpReason.LOGIN);
+    otpStore.storeOtp("testKey", "new-otp", 1000);
+    OtpEntry entry = otpStore.getOtpEntry("testKey");
     assertEquals(0, entry.failedAttempts);
   }
 
   @Test
   void testVerifyExpiredOtp() throws InterruptedException {
-    otpStore.storeOtp("testKey", "123456", 1, OtpReason.LOGIN);
+    otpStore.storeOtp("testKey", "123456", 1);
     Thread.sleep(10);
-    assertFalse(otpStore.verifyOtp("testKey", "123456", OtpReason.LOGIN));
+    assertFalse(otpStore.verifyOtp("testKey", "123456"));
   }
 
   @Test
   void testInvalidateOtp() {
-    otpStore.storeOtp("testKey", "123456", 1000, OtpReason.LOGIN);
-    otpStore.invalidateOtp("testKey", OtpReason.LOGIN);
-    assertFalse(otpStore.verifyOtp("testKey", "123456", OtpReason.LOGIN));
+    otpStore.storeOtp("testKey", "123456", 1000);
+    otpStore.invalidateOtp("testKey");
+    assertFalse(otpStore.verifyOtp("testKey", "123456"));
   }
 }

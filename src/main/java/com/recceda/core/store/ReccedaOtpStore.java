@@ -3,7 +3,6 @@ package com.recceda.core.store;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
-import com.recceda.core.reason.OtpReason;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -14,8 +13,8 @@ import java.util.concurrent.TimeUnit;
  * An in-memory OTP store that uses a Caffeine cache for high-performance, concurrent access.
  *
  * <p>This class is responsible for storing, verifying, and invalidating OTPs. It uses a secure
- * SHA-256 hash to store OTPs and relies on the Caffeine library's time-based eviction for
- * automatic cleanup of expired OTPs.
+ * SHA-256 hash to store OTPs and relies on the Caffeine library's time-based eviction for automatic
+ * cleanup of expired OTPs.
  */
 public class ReccedaOtpStore implements OtpStore {
 
@@ -59,17 +58,15 @@ public class ReccedaOtpStore implements OtpStore {
   }
 
   @Override
-  public void storeOtp(String key, String otp, long ttlMillis, OtpReason reason) {
-    String compositeKey = key + ":" + reason.name();
+  public void storeOtp(String key, String otp, long ttlMillis) {
     long expiryTime = System.currentTimeMillis() + ttlMillis;
     String otpHash = hashOtp(otp);
-    otpMap.put(compositeKey, new OtpEntry(otpHash, expiryTime, reason));
+    otpMap.put(key, new OtpEntry(otpHash, expiryTime));
   }
 
   @Override
-  public boolean verifyOtp(String key, String otp, OtpReason reason) {
-    String compositeKey = key + ":" + reason.name();
-    OtpEntry entry = otpMap.getIfPresent(compositeKey);
+  public boolean verifyOtp(String key, String otp) {
+    OtpEntry entry = otpMap.getIfPresent(key);
     if (entry == null) {
       return false;
     }
@@ -78,21 +75,19 @@ public class ReccedaOtpStore implements OtpStore {
     boolean isValid = otpHash.equals(entry.otpHash);
     if (!isValid) {
       entry.failedAttempts++;
-      otpMap.put(compositeKey, entry);
+      otpMap.put(key, entry);
     }
     return isValid;
   }
 
   @Override
-  public OtpEntry getOtpEntry(String key, OtpReason reason) {
-    String compositeKey = key + ":" + reason.name();
-    return otpMap.getIfPresent(compositeKey);
+  public OtpEntry getOtpEntry(String key) {
+    return otpMap.getIfPresent(key);
   }
 
   @Override
-  public void invalidateOtp(String key, OtpReason reason) {
-    String compositeKey = key + ":" + reason.name();
-    otpMap.invalidate(compositeKey);
+  public void invalidateOtp(String key) {
+    otpMap.invalidate(key);
   }
 
   private String hashOtp(String otp) {
@@ -108,15 +103,13 @@ public class ReccedaOtpStore implements OtpStore {
   public static class OtpEntry {
     public String otpHash;
     public long expiryTime;
-    public OtpReason reason;
     public int failedAttempts;
 
     public OtpEntry() {}
 
-    public OtpEntry(String otpHash, long expiryTime, OtpReason reason) {
+    public OtpEntry(String otpHash, long expiryTime) {
       this.otpHash = otpHash;
       this.expiryTime = expiryTime;
-      this.reason = reason;
       this.failedAttempts = 0;
     }
   }

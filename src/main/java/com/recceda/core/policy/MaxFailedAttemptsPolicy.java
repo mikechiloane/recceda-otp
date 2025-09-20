@@ -1,13 +1,12 @@
 package com.recceda.core.policy;
 
-import com.recceda.core.reason.OtpReason;
 import com.recceda.core.store.OtpStore;
 import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
 import com.recceda.exception.OtpGenerationException;
 
 /**
  * A policy that prevents OTP generation if the user has exceeded the maximum number of failed
- * verification attempts for a given reason.
+ * verification attempts.
  */
 public class MaxFailedAttemptsPolicy implements Policy {
 
@@ -23,11 +22,11 @@ public class MaxFailedAttemptsPolicy implements Policy {
   }
 
   @Override
-  public void check(String key, OtpReason reason, OtpStore store) {
-    OtpEntry entry = store.getOtpEntry(key, reason);
+  public void check(String key, OtpStore store) {
+    OtpEntry entry = store.getOtpEntry(key);
     if (entry != null && entry.failedAttempts >= maxAttempts) {
       throw new OtpGenerationException(
-          "User has exceeded the maximum number of failed OTP attempts for this reason.");
+          "User has exceeded the maximum number of failed OTP attempts.");
     }
   }
 }

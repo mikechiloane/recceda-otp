@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import com.recceda.core.distributor.OtpDistributor;
 import com.recceda.core.generator.OtpGenerator;
 import com.recceda.core.policy.Policy;
-import com.recceda.core.reason.OtpReason;
 import com.recceda.core.store.OtpStore;
 import com.recceda.exception.OtpGenerationException;
 import java.util.Arrays;
@@ -35,17 +34,16 @@ class ReccedaOtpTest {
     // Given
     reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Collections.emptyList());
     String key = "test-user";
-    OtpReason reason = OtpReason.LOGIN;
     String generatedOtp = "123456";
     OtpDistributor distributor = (k, o) -> {};
     when(otpGenerator.generateOtp(6)).thenReturn(generatedOtp);
 
     // When
-    reccedaOtp.generateOtp(key, reason, distributor);
+    reccedaOtp.generateOtp(key, distributor);
 
     // Then
     verify(otpGenerator).generateOtp(6);
-    verify(otpStore).storeOtp(key, generatedOtp, 300000L, reason);
+    verify(otpStore).storeOtp(key, generatedOtp, 300000L);
   }
 
   @Test
@@ -54,31 +52,29 @@ class ReccedaOtpTest {
     Policy policy = mock(Policy.class);
     reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Arrays.asList(policy));
     String key = "test-user";
-    OtpReason reason = OtpReason.LOGIN;
     OtpDistributor distributor = (k, o) -> {};
 
     // When
-    reccedaOtp.generateOtp(key, reason, distributor);
+    reccedaOtp.generateOtp(key, distributor);
 
     // Then
-    verify(policy).check(key, reason, otpStore);
+    verify(policy).check(key, otpStore);
   }
 
   @Test
   void generateOtpShouldThrowExceptionWhenPolicyFails() {
     // Given
     Policy policy = mock(Policy.class);
-    doThrow(new OtpGenerationException("Policy failed")).when(policy).check(any(), any(), any());
+    doThrow(new OtpGenerationException("Policy failed")).when(policy).check(any(), any());
     reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Arrays.asList(policy));
     String key = "test-user";
-    OtpReason reason = OtpReason.LOGIN;
     OtpDistributor distributor = (k, o) -> {};
 
     // Then
     assertThrows(
         OtpGenerationException.class,
         () -> {
-          reccedaOtp.generateOtp(key, reason, distributor);
+          reccedaOtp.generateOtp(key, distributor);
         });
   }
 
@@ -88,14 +84,13 @@ class ReccedaOtpTest {
     reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Collections.emptyList());
     String key = "test-user";
     String otp = "123456";
-    OtpReason reason = OtpReason.LOGIN;
-    when(otpStore.verifyOtp(key, otp, reason)).thenReturn(true);
+    when(otpStore.verifyOtp(key, otp)).thenReturn(true);
 
     // When
-    boolean result = reccedaOtp.verifyOtp(key, otp, reason);
+    boolean result = reccedaOtp.verifyOtp(key, otp);
 
     // Then
     assertTrue(result);
-    verify(otpStore).verifyOtp(key, otp, reason);
+    verify(otpStore).verifyOtp(key, otp);
   }
 }

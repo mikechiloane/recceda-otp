@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import com.recceda.core.reason.OtpReason;
 import com.recceda.core.store.OtpStore;
 import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
 import com.recceda.exception.OtpGenerationException;
@@ -22,17 +21,16 @@ class MaxFailedAttemptsPolicyTest {
   void shouldThrowExceptionWhenMaxAttemptsExceeded() {
     // Given
     String key = "test-user";
-    OtpReason reason = OtpReason.LOGIN;
     MaxFailedAttemptsPolicy policy = new MaxFailedAttemptsPolicy(3);
-    OtpEntry entry = new OtpEntry("hash", System.currentTimeMillis() + 10000, reason);
+    OtpEntry entry = new OtpEntry("hash", System.currentTimeMillis() + 10000);
     entry.failedAttempts = 3;
-    when(otpStore.getOtpEntry(key, reason)).thenReturn(entry);
+    when(otpStore.getOtpEntry(key)).thenReturn(entry);
 
     // Then
     assertThrows(
         OtpGenerationException.class,
         () -> {
-          policy.check(key, reason, otpStore);
+          policy.check(key, otpStore);
         });
   }
 
@@ -40,16 +38,15 @@ class MaxFailedAttemptsPolicyTest {
   void shouldNotThrowExceptionWhenMaxAttemptsNotExceeded() {
     // Given
     String key = "test-user";
-    OtpReason reason = OtpReason.LOGIN;
     MaxFailedAttemptsPolicy policy = new MaxFailedAttemptsPolicy(3);
-    OtpEntry entry = new OtpEntry("hash", System.currentTimeMillis() + 10000, reason);
+    OtpEntry entry = new OtpEntry("hash", System.currentTimeMillis() + 10000);
     entry.failedAttempts = 2;
-    when(otpStore.getOtpEntry(key, reason)).thenReturn(entry);
+    when(otpStore.getOtpEntry(key)).thenReturn(entry);
 
     // Then
     assertDoesNotThrow(
         () -> {
-          policy.check(key, reason, otpStore);
+          policy.check(key, otpStore);
         });
   }
 
@@ -57,14 +54,13 @@ class MaxFailedAttemptsPolicyTest {
   void shouldNotThrowExceptionWhenNoEntryExists() {
     // Given
     String key = "test-user";
-    OtpReason reason = OtpReason.LOGIN;
     MaxFailedAttemptsPolicy policy = new MaxFailedAttemptsPolicy(3);
-    when(otpStore.getOtpEntry(key, reason)).thenReturn(null);
+    when(otpStore.getOtpEntry(key)).thenReturn(null);
 
     // Then
     assertDoesNotThrow(
         () -> {
-          policy.check(key, reason, otpStore);
+          policy.check(key, otpStore);
         });
   }
 }
