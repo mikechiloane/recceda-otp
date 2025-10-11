@@ -34,4 +34,10 @@ public class GithubOtpStore implements OtpStore {
     public void invalidateOtp(String key) {
 
     }
+
+    public static class OtpEntry {
+        private String otp;
+        private String key;
+        public long expiryTime;
+        public int failedAttempts;    }
 }
