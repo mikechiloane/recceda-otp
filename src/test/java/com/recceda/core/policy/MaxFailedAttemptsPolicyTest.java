@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.recceda.core.store.OtpStore;
-import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
+import com.recceda.core.store.reccedda.ReccedaOtpStore.OtpEntry;
 import com.recceda.exception.OtpGenerationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

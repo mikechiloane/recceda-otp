@@ -1,7 +1,7 @@
 package com.recceda.core.policy;
 
 import com.recceda.core.store.OtpStore;
-import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
+import com.recceda.core.store.reccedda.ReccedaOtpStore.OtpEntry;
 import com.recceda.exception.OtpGenerationException;
 
 /**

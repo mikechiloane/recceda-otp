@@ -1,6 +1,6 @@
 package com.recceda.core.store;
 
-import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
+import com.recceda.core.store.reccedda.ReccedaOtpStore.OtpEntry;
 
 /**
  * An interface for storing, verifying, and managing OTPs.

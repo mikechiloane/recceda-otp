@@ -2,7 +2,8 @@ package com.recceda.core.store;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.recceda.core.store.ReccedaOtpStore.OtpEntry;
+import com.recceda.core.store.reccedda.ReccedaOtpStore;
+import com.recceda.core.store.reccedda.ReccedaOtpStore.OtpEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

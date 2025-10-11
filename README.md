@@ -60,7 +60,7 @@ Here is a simple example of how to generate and verify an OTP for a user.
 ```java
 import com.recceda.ReccedaOtp;
 import com.recceda.core.store.OtpStore;
-import com.recceda.core.store.ReccedaOtpStore;
+import com.recceda.core.store.reccedda.ReccedaOtpStore;
 import com.recceda.core.policy.Policy;
 import com.recceda.core.policy.PreventDuplicateOtpPolicy;
 
