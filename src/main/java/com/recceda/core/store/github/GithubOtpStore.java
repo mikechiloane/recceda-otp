@@ -7,6 +7,7 @@ import com.recceda.core.store.reccedda.ReccedaOtpStore;
 import com.recceda.elements.Repository;
 import com.recceda.http.github.GithubClient;
 import com.recceda.http.requests.repository.CreateRepositoryRequest;
+import lombok.AllArgsConstructor;
 
 import java.util.concurrent.ExecutionException;
 
@@ -26,7 +27,10 @@ public class GithubOtpStore implements OtpStore {
 
     @Override
     public void storeOtp(String key, String otp, long ttlMillis) {
+        OtpEntry otpEntry = new OtpEntry(key,otp, 0);
 
+        // TODO: Create file that takes repository as input.
+        repositoryAction.createFile();
     }
 
     @Override
@@ -53,10 +57,12 @@ public class GithubOtpStore implements OtpStore {
                 .build();
     }
 
+
+    @AllArgsConstructor
     public static class OtpEntry {
-        public long expiryTime;
-        public int failedAttempts;
-        private String otp;
         private String key;
+        private String otp;
+        public int failedAttempts;
+
     }
 }
