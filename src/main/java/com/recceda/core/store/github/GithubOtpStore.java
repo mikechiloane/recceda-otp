@@ -4,11 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.recceda.action.RepositoryAction;
 import com.recceda.core.store.OtpStore;
 import com.recceda.core.store.reccedda.ReccedaOtpStore;
+import com.recceda.elements.Committer;
 import com.recceda.elements.Repository;
 import com.recceda.http.github.GithubClient;
+import com.recceda.http.requests.file.CreateFileRequest;
 import com.recceda.http.requests.repository.CreateRepositoryRequest;
 import lombok.AllArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.concurrent.ExecutionException;
 
 public class GithubOtpStore implements OtpStore {
@@ -27,10 +30,8 @@ public class GithubOtpStore implements OtpStore {
 
     @Override
     public void storeOtp(String key, String otp, long ttlMillis) {
-        OtpEntry otpEntry = new OtpEntry(key,otp, 0);
-
-        // TODO: Create file that takes repository as input.
-        repositoryAction.createFile();
+        OtpEntry otpEntry = new OtpEntry(key, otp, 0);
+        repositoryAction.createFile(this.repository);
     }
 
     @Override
@@ -57,12 +58,21 @@ public class GithubOtpStore implements OtpStore {
                 .build();
     }
 
+    private CreateFileRequest createFileRequestForOtp(OtpEntry otpEntry) throws JsonProcessingException {
+        String message = LocalDate.now().toString() + " " + this.otpStoreName + " " + otpEntry.key;
+        Committer committer = Committer.builder()
+                .name(this.getClass().getName())
+                .email("test@example.com").build();
+
+        return new CreateFileRequest(otpEntry, committer, message);
+    }
+
 
     @AllArgsConstructor
     public static class OtpEntry {
+        public int failedAttempts;
         private String key;
         private String otp;
-        public int failedAttempts;
 
     }
 }
