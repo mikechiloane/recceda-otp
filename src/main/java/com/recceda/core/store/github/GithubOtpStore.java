@@ -39,9 +39,7 @@ public class GithubOtpStore implements OtpStore {
         OtpEntry otpEntry = new OtpEntry(key, otp);
         try {
             CreateFileRequest createFileRequest = new CreateFileRequest(otpEntry, committer, LocalDate.now().toString() + " " + this.otpStoreName + " " + key);
-
             fileAction.createFile(createFileRequest, this.repository, "otp" + key + ".json");
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
