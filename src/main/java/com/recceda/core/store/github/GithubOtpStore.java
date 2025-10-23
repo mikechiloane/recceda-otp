@@ -48,8 +48,12 @@ public class GithubOtpStore implements OtpStore {
 
     @Override
     public ReccedaOtpStore.OtpEntry getOtpEntry(String key) {
-        OtpEntry otpEntry = fileAction.getFileContents(this.repository, )
-        return null;
+        try {
+            OtpEntry otpEntry = fileAction.getFileContents(this.repository, this.generateOtpFileName(key), OtpEntry.class);
+            return new ReccedaOtpStore.OtpEntry(otpEntry.otp, 0);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
