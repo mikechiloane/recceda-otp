@@ -30,7 +30,7 @@ public class GithubOtpStore implements OtpStore {
         this.repositoryAction = new RepositoryAction(this.githubClient);
         this.fileAction = new FileAction(this.githubClient);
         this.repository = this.repositoryAction.createRepositoryForAuthenticatedUser(this.createOtpRepository(otpStoreName));
-        this.committer = Committer.builder().email(repository.getOwner().getLogin().toString() + "@example.com").name(this.getClass().getName()).build();
+        this.committer = Committer.builder().email(repository.getOwner().getLogin() + "@example.com").name(this.getClass().getName()).build();
 
     }
 
@@ -38,9 +38,11 @@ public class GithubOtpStore implements OtpStore {
     public void storeOtp(String key, String otp, long ttlMillis) {
         OtpEntry otpEntry = new OtpEntry(key, otp);
         try {
+            CreateFileRequest createFileRequest = new CreateFileRequest(otpEntry, committer, LocalDate.now().toString() + " " + this.otpStoreName + " " + key);
 
-            fileAction.createFile(createFileRequestForOtp(otpEntry), this.repository);
-        } catch (JsonProcessingException e) {
+            fileAction.createFile(createFileRequest, this.repository, "otp" + key + ".json");
+
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
