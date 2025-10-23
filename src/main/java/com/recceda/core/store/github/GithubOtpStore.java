@@ -22,6 +22,7 @@ public class GithubOtpStore implements OtpStore {
     private final FileAction fileAction;
     private final Repository repository;
     private final String otpStoreName;
+    private final Committer committer;
 
     public GithubOtpStore(String githubToken, String otpStoreName) throws ExecutionException, InterruptedException, JsonProcessingException {
         this.otpStoreName = otpStoreName;
@@ -29,13 +30,16 @@ public class GithubOtpStore implements OtpStore {
         this.repositoryAction = new RepositoryAction(this.githubClient);
         this.fileAction = new FileAction(this.githubClient);
         this.repository = this.repositoryAction.createRepositoryForAuthenticatedUser(this.createOtpRepository(otpStoreName));
+        this.committer = Committer.builder().email(repository.getOwner().getLogin().toString() + "@example.com").name(this.getClass().getName()).build();
+
     }
 
     @Override
     public void storeOtp(String key, String otp, long ttlMillis) {
         OtpEntry otpEntry = new OtpEntry(key, otp);
         try {
-            repositoryAction.createFile(createFileRequestForOtp(otpEntry), this.repository);
+
+            fileAction.createFile(createFileRequestForOtp(otpEntry), this.repository);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
