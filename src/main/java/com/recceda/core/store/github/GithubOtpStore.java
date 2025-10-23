@@ -22,7 +22,6 @@ public class GithubOtpStore implements OtpStore {
     private final FileAction fileAction;
     private final Repository repository;
     private final String otpStoreName;
-    private final Committer committer;
 
     public GithubOtpStore(String githubToken, String otpStoreName) throws ExecutionException, InterruptedException, JsonProcessingException {
         this.otpStoreName = otpStoreName;
@@ -30,16 +29,13 @@ public class GithubOtpStore implements OtpStore {
         this.repositoryAction = new RepositoryAction(this.githubClient);
         this.fileAction = new FileAction(this.githubClient);
         this.repository = this.repositoryAction.createRepositoryForAuthenticatedUser(this.createOtpRepository(otpStoreName));
-        this.committer = Committer.builder().email(repository.getOwner().getLogin() + "@example.com").name(this.getClass().getName()).build();
-
     }
 
     @Override
     public void storeOtp(String key, String otp, long ttlMillis) {
         OtpEntry otpEntry = new OtpEntry(key, otp);
         try {
-            CreateFileRequest createFileRequest = new CreateFileRequest(otpEntry, committer, LocalDate.now().toString() + " " + this.otpStoreName + " " + key);
-            fileAction.createFile(createFileRequest, this.repository, "otp" + key + ".json");
+            fileAction.createFile(this.createFileRequestForOtp(otpEntry), this.repository, this.generateOtpFileName(key));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -52,6 +48,7 @@ public class GithubOtpStore implements OtpStore {
 
     @Override
     public ReccedaOtpStore.OtpEntry getOtpEntry(String key) {
+        OtpEntry otpEntry = fileAction.getFileContents(this.repository, )
         return null;
     }
 
@@ -78,6 +75,9 @@ public class GithubOtpStore implements OtpStore {
         return new CreateFileRequest(otpEntry, committer, message);
     }
 
+    private String generateOtpFileName(String key) {
+        return "otp_" + key + ".json";
+    }
 
     @AllArgsConstructor
     public static class OtpEntry {
@@ -85,4 +85,5 @@ public class GithubOtpStore implements OtpStore {
         private String otp;
 
     }
+
 }
