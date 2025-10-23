@@ -31,7 +31,11 @@ public class GithubOtpStore implements OtpStore {
     @Override
     public void storeOtp(String key, String otp, long ttlMillis) {
         OtpEntry otpEntry = new OtpEntry(key, otp, 0);
-        repositoryAction.createFile(this.repository);
+        try {
+            repositoryAction.createFile(createFileRequestForOtp(otpEntry), this.repository);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
