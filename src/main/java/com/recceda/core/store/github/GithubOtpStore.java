@@ -1,6 +1,7 @@
 package com.recceda.core.store.github;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.recceda.action.FileAction;
 import com.recceda.action.RepositoryAction;
 import com.recceda.core.store.OtpStore;
 import com.recceda.core.store.reccedda.ReccedaOtpStore;
@@ -18,6 +19,7 @@ public class GithubOtpStore implements OtpStore {
 
     private final GithubClient githubClient;
     private final RepositoryAction repositoryAction;
+    private final FileAction fileAction;
     private final Repository repository;
     private final String otpStoreName;
 
@@ -25,12 +27,13 @@ public class GithubOtpStore implements OtpStore {
         this.otpStoreName = otpStoreName;
         this.githubClient = new GithubClient(githubToken);
         this.repositoryAction = new RepositoryAction(this.githubClient);
+        this.fileAction = new FileAction(this.githubClient);
         this.repository = this.repositoryAction.createRepositoryForAuthenticatedUser(this.createOtpRepository(otpStoreName));
     }
 
     @Override
     public void storeOtp(String key, String otp, long ttlMillis) {
-        OtpEntry otpEntry = new OtpEntry(key, otp, 0);
+        OtpEntry otpEntry = new OtpEntry(key, otp);
         try {
             repositoryAction.createFile(createFileRequestForOtp(otpEntry), this.repository);
         } catch (JsonProcessingException e) {
@@ -74,7 +77,6 @@ public class GithubOtpStore implements OtpStore {
 
     @AllArgsConstructor
     public static class OtpEntry {
-        public int failedAttempts;
         private String key;
         private String otp;
 
