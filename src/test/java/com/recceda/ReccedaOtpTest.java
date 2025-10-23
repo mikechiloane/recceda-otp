@@ -31,14 +31,12 @@ class ReccedaOtpTest {
 
   @Test
   void generateOtpShouldCallGeneratorAndStoreAndDistributor() {
-    // Given
     reccedaOtp = new ReccedaOtp(otpGenerator, otpStore, Collections.emptyList());
     String key = "test-user";
     String generatedOtp = "123456";
     OtpDistributor distributor = (k, o) -> {};
     when(otpGenerator.generateOtp(6)).thenReturn(generatedOtp);
 
-    // When
     reccedaOtp.generateOtp(key, distributor);
 
     // Then
