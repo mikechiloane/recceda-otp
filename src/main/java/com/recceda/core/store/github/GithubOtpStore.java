@@ -58,7 +58,6 @@ public class GithubOtpStore implements OtpStore {
 
     @Override
     public void invalidateOtp(String key) {
-
     }
 
     private CreateRepositoryRequest createOtpRepository(String otpStoreName) {
