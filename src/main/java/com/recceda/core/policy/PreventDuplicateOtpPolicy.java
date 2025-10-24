@@ -1,7 +1,7 @@
 package com.recceda.core.policy;
 
+import com.recceda.OtpEntry;
 import com.recceda.core.store.OtpStore;
-import com.recceda.core.store.reccedda.ReccedaOtpStore.Otp;
 import com.recceda.exception.OtpGenerationException;
 
 /**
@@ -12,8 +12,8 @@ public class PreventDuplicateOtpPolicy implements Policy {
 
   @Override
   public void check(String key, OtpStore store) {
-    Otp entry = store.getOtpEntry(key);
-    if (entry != null && entry.expiryTime > System.currentTimeMillis()) {
+    OtpEntry entry = store.getOtpEntry(key);
+    if (entry != null && entry.getFailedAttempts() > System.currentTimeMillis()) {
       throw new OtpGenerationException("An active OTP already exists for this user.");
     }
   }
