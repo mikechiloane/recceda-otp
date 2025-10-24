@@ -111,6 +111,10 @@ public class GithubOtpStore implements OtpStore {
         return "otp_" + key + ".json";
     }
 
+    public void destroy() throws ExecutionException, InterruptedException {
+        repositoryAction.deleteRepositoryForAuthenticatedUser(this.repository.getOwner().getLogin(), this.repository.getName());
+    }
+
     @Getter
     @NoArgsConstructor
     @SuperBuilder
