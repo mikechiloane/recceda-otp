@@ -13,7 +13,7 @@ public class PreventDuplicateOtpPolicy implements Policy {
   @Override
   public void check(String key, OtpStore store) {
     OtpEntry entry = store.getOtpEntry(key);
-    if (entry != null && entry.getFailedAttempts() > System.currentTimeMillis()) {
+    if (entry != null && entry.getExpiryTime() > System.currentTimeMillis()) {
       throw new OtpGenerationException("An active OTP already exists for this user.");
     }
   }

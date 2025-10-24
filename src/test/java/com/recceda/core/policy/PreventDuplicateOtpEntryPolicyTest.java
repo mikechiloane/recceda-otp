@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import com.recceda.OtpEntry;
 import com.recceda.core.store.OtpStore;
-import com.recceda.core.store.reccedda.ReccedaOtpStore.Otp;
 import com.recceda.exception.OtpGenerationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +23,7 @@ class PreventDuplicateOtpEntryPolicyTest {
   void shouldThrowExceptionWhenActiveOtpExists() {
     // Given
     String key = "test-user";
-    Otp activeEntry = new Otp("hash", System.currentTimeMillis() + 10000);
+    OtpEntry activeEntry = OtpEntry.builder().key(key).expiryTime(System.currentTimeMillis() + 10000).build();
     when(otpStore.getOtpEntry(key)).thenReturn(activeEntry);
 
     // Then
@@ -51,7 +51,7 @@ class PreventDuplicateOtpEntryPolicyTest {
   void shouldNotThrowExceptionWhenOtpIsExpired() {
     // Given
     String key = "test-user";
-    Otp expiredEntry = new Otp("hash", System.currentTimeMillis() - 10000);
+    OtpEntry expiredEntry = OtpEntry.builder().key(key).expiryTime(System.currentTimeMillis() - 10000).build();
     when(otpStore.getOtpEntry(key)).thenReturn(expiredEntry);
 
     // Then
