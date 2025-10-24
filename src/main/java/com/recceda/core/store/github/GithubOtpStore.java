@@ -49,7 +49,7 @@ public class GithubOtpStore implements OtpStore {
     @Override
     public ReccedaOtpStore.OtpEntry getOtpEntry(String key) {
         try {
-            OtpEntry otpEntry = fileAction.getFileContents(this.repository, this.generateOtpFileName(key), OtpEntry.class);
+            OtpEntry otpEntry = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key), OtpEntry.class);
             return new ReccedaOtpStore.OtpEntry(otpEntry.otp, 0);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -70,7 +70,7 @@ public class GithubOtpStore implements OtpStore {
     }
 
     private CreateFileRequest createFileRequestForOtp(OtpEntry otpEntry) throws JsonProcessingException {
-        String message = LocalDate.now().toString() + " " + this.otpStoreName + " " + otpEntry.key;
+        String message = LocalDate.now() + " " + this.otpStoreName + " " + otpEntry.key;
         Committer committer = Committer.builder()
                 .name(this.getClass().getName())
                 .email("test@example.com").build();
