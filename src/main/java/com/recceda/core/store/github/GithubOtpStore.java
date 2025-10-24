@@ -12,6 +12,8 @@ import com.recceda.http.requests.file.CreateFileRequest;
 import com.recceda.http.requests.file.DeleteFileRequest;
 import com.recceda.http.requests.repository.CreateRepositoryRequest;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.concurrent.ExecutionException;
@@ -29,7 +31,9 @@ public class GithubOtpStore implements OtpStore {
         this.githubClient = new GithubClient(githubToken);
         this.repositoryAction = new RepositoryAction(this.githubClient);
         this.fileAction = new FileAction(this.githubClient);
+
         this.repository = this.repositoryAction.createRepositoryForAuthenticatedUser(this.createOtpRepository(otpStoreName));
+
     }
 
     @Override
@@ -108,6 +112,8 @@ public class GithubOtpStore implements OtpStore {
     }
 
     @AllArgsConstructor
+    @Getter
+    @NoArgsConstructor
     public static class OtpEntry {
         private String key;
         private String otp;
