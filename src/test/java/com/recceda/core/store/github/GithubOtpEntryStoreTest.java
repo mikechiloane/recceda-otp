@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Random;
 
-class GithubOtpStoreTest {
+class GithubOtpEntryStoreTest {
 
     @Test
     void e2eTest() throws Exception {

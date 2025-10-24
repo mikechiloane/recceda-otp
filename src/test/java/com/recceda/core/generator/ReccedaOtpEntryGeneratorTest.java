@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-class ReccedaOtpGeneratorTest {
+class ReccedaOtpEntryGeneratorTest {
 
   private final OtpGenerator otpGenerator = new ReccedaOtpGenerator();
 

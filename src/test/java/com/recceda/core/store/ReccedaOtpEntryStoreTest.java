@@ -7,7 +7,7 @@ import com.recceda.core.store.reccedda.ReccedaOtpStore.Otp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class ReccedaOtpStoreTest {
+class ReccedaOtpEntryStoreTest {
 
   private OtpStore otpStore;
 

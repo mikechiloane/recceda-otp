@@ -3,12 +3,10 @@ package com.recceda.core.store.reccedda;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Expiry;
+import com.recceda.OtpEntry;
 import com.recceda.core.store.OtpStore;
+import com.recceda.core.util.HashingUtil;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -20,99 +18,77 @@ import java.util.concurrent.TimeUnit;
  */
 public class ReccedaOtpStore implements OtpStore {
 
-  private final Cache<String, Otp> otpMap;
+    private final Cache<String, OtpEntry> otpMap;
 
-  /**
-   * Creates a new {@code ReccedaOtpStore} with the default expiry policy.
-   *
-   * <p>The default policy expires entries based on the `expiryTime` in the {@link Otp}.
-   */
-  public ReccedaOtpStore() {
-    this(
-        new Expiry<String, Otp>() {
-          @Override
-          public long expireAfterCreate(String key, Otp value, long currentTime) {
-            long millis = value.expiryTime - System.currentTimeMillis();
-            return TimeUnit.MILLISECONDS.toNanos(millis);
-          }
+    /**
+     * Creates a new {@code ReccedaOtpStore} with the default expiry policy.
+     *
+     * <p>The default policy expires entries based on the `expiryTime` in the {@link OtpEntry}.
+     */
+    public ReccedaOtpStore() {
+        this(
+                new Expiry<String, OtpEntry>() {
+                    @Override
+                    public long expireAfterCreate(String key, OtpEntry value, long currentTime) {
+                        long millis = value.expiryTime - System.currentTimeMillis();
+                        return TimeUnit.MILLISECONDS.toNanos(millis);
+                    }
 
-          @Override
-          public long expireAfterUpdate(
-                  String key, Otp value, long currentTime, long currentDuration) {
-            return currentDuration;
-          }
+                    @Override
+                    public long expireAfterUpdate(
+                            String key, OtpEntry value, long currentTime, long currentDuration) {
+                        return currentDuration;
+                    }
 
-          @Override
-          public long expireAfterRead(
-                  String key, Otp value, long currentTime, long currentDuration) {
-            return currentDuration;
-          }
-        });
-  }
-
-  /**
-   * Creates a new {@code ReccedaOtpStore} with a custom expiry policy.
-   *
-   * @param expiry the custom expiry policy to use for the Caffeine cache.
-   */
-  public ReccedaOtpStore(Expiry<String, Otp> expiry) {
-    this.otpMap = Caffeine.newBuilder().expireAfter(expiry).build();
-  }
-
-  @Override
-  public void storeOtp(String key, String otp, long ttlMillis) {
-    long expiryTime = System.currentTimeMillis() + ttlMillis;
-    String otpHash = hashOtp(otp);
-    otpMap.put(key, new Otp(otpHash, expiryTime));
-  }
-
-  @Override
-  public boolean verifyOtp(String key, String otp) {
-    Otp entry = otpMap.getIfPresent(key);
-    if (entry == null) {
-      return false;
+                    @Override
+                    public long expireAfterRead(
+                            String key, OtpEntry value, long currentTime, long currentDuration) {
+                        return currentDuration;
+                    }
+                });
     }
 
-    String otpHash = hashOtp(otp);
-    boolean isValid = otpHash.equals(entry.otpHash);
-    if (!isValid) {
-      entry.failedAttempts++;
-      otpMap.put(key, entry);
+    /**
+     * Creates a new {@code ReccedaOtpStore} with a custom expiry policy.
+     *
+     * @param expiry the custom expiry policy to use for the Caffeine cache.
+     */
+    public ReccedaOtpStore(Expiry<String, OtpEntry> expiry) {
+        this.otpMap = Caffeine.newBuilder().expireAfter(expiry).build();
     }
-    return isValid;
-  }
 
-  @Override
-  public Otp getOtpEntry(String key) {
-    return otpMap.getIfPresent(key);
-  }
-
-  @Override
-  public void invalidateOtp(String key) {
-    otpMap.invalidate(key);
-  }
-
-  private String hashOtp(String otp) {
-    try {
-      MessageDigest digest = MessageDigest.getInstance("SHA-256");
-      byte[] hash = digest.digest(otp.getBytes(StandardCharsets.UTF_8));
-      return Base64.getEncoder().encodeToString(hash);
-    } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException("SHA-256 algorithm not found", e);
+    @Override
+    public void storeOtp(String key, String otp, long ttlMillis) {
+        long expiryTime = System.currentTimeMillis() + ttlMillis;
+        String otpHash = HashingUtil.hashOtp(otp);
+        otpMap.put(key, new OtpEntry(otpHash, expiryTime));
     }
-  }
 
-  public static class Otp {
-    public String otpHash;
-    public long expiryTime;
-    public int failedAttempts;
+    @Override
+    public boolean verifyOtp(String key, String otp) {
+        OtpEntry entry = otpMap.getIfPresent(key);
+        if (entry == null) {
+            return false;
+        }
 
-    public Otp() {}
-
-    public Otp(String otpHash, long expiryTime) {
-      this.otpHash = otpHash;
-      this.expiryTime = expiryTime;
-      this.failedAttempts = 0;
+        String otpHash = HashingUtil.hashOtp(otp);
+        boolean isValid = otpHash.equals(entry.otpHash);
+        if (!isValid) {
+            entry.failedAttempts++;
+            otpMap.put(key, entry);
+        }
+        return isValid;
     }
-  }
+
+    @Override
+    public OtpEntry getOtpEntry(String key) {
+        return otpMap.getIfPresent(key);
+    }
+
+    @Override
+    public void invalidateOtp(String key) {
+        otpMap.invalidate(key);
+    }
+
+
 }
