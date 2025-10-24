@@ -44,7 +44,13 @@ public class GithubOtpStore implements OtpStore {
 
     @Override
     public boolean verifyOtp(String key, String otp) {
-        return false;
+        try {
+            OtpEntry otpEntry = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.
+                    generateOtpFileName(key), OtpEntry.class);
+            return otpEntry.otp.equals(otp);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
@@ -61,7 +67,6 @@ public class GithubOtpStore implements OtpStore {
     public void invalidateOtp(String key) {
         try {
             String sha = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key)).getSha();
-
             fileAction.deleteFile(this.createDeleteFileRequest(key, sha), this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key));
         } catch (Exception e) {
             throw new RuntimeException(e);
