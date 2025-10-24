@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutionException;
 
 public class GithubOtpStore implements OtpStore {
 
-    private final GithubClient githubClient;
     private final RepositoryAction repositoryAction;
     private final FileAction fileAction;
     private final Repository repository;
@@ -28,9 +27,9 @@ public class GithubOtpStore implements OtpStore {
 
     public GithubOtpStore(String githubToken, String otpStoreName) throws ExecutionException, InterruptedException, JsonProcessingException {
         this.otpStoreName = otpStoreName;
-        this.githubClient = new GithubClient(githubToken);
-        this.repositoryAction = new RepositoryAction(this.githubClient);
-        this.fileAction = new FileAction(this.githubClient);
+        GithubClient githubClient = new GithubClient(githubToken);
+        this.repositoryAction = new RepositoryAction(githubClient);
+        this.fileAction = new FileAction(githubClient);
 
         this.repository = this.repositoryAction.createRepositoryForAuthenticatedUser(this.createOtpRepository(otpStoreName));
 
