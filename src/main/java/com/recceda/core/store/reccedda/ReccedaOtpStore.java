@@ -30,7 +30,7 @@ public class ReccedaOtpStore implements OtpStore {
                 new Expiry<String, OtpEntry>() {
                     @Override
                     public long expireAfterCreate(String key, OtpEntry value, long currentTime) {
-                        long millis = value.expiryTime - System.currentTimeMillis();
+                        long millis = value.getExpiryTime() - System.currentTimeMillis();
                         return TimeUnit.MILLISECONDS.toNanos(millis);
                     }
 
@@ -61,7 +61,7 @@ public class ReccedaOtpStore implements OtpStore {
     public void storeOtp(String key, String otp, long ttlMillis) {
         long expiryTime = System.currentTimeMillis() + ttlMillis;
         String otpHash = HashingUtil.hashOtp(otp);
-        otpMap.put(key, new OtpEntry(otpHash, expiryTime));
+        otpMap.put(key, OtpEntry.builder().key(key).otpHash(otpHash).expiryTime(expiryTime).failedAttempts(0).build());
     }
 
     @Override
@@ -72,9 +72,9 @@ public class ReccedaOtpStore implements OtpStore {
         }
 
         String otpHash = HashingUtil.hashOtp(otp);
-        boolean isValid = otpHash.equals(entry.otpHash);
+        boolean isValid = otpHash.equals(entry.getOtpHash());
         if (!isValid) {
-            entry.failedAttempts++;
+            entry.setFailedAttempts(entry.getFailedAttempts() + 1);
             otpMap.put(key, entry);
         }
         return isValid;
