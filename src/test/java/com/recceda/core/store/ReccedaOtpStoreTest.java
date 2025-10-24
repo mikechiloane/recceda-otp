@@ -3,7 +3,7 @@ package com.recceda.core.store;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.recceda.core.store.reccedda.ReccedaOtpStore;
-import com.recceda.core.store.reccedda.ReccedaOtpStore.OtpEntry;
+import com.recceda.core.store.reccedda.ReccedaOtpStore.Otp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,7 @@ class ReccedaOtpStoreTest {
     otpStore.storeOtp("testKey", "123456", 1000);
     assertFalse(otpStore.verifyOtp("testKey", "654321"));
 
-    OtpEntry entry = otpStore.getOtpEntry("testKey");
+    Otp entry = otpStore.getOtpEntry("testKey");
     assertEquals(1, entry.failedAttempts);
 
     assertFalse(otpStore.verifyOtp("testKey", "000000"));
@@ -41,7 +41,7 @@ class ReccedaOtpStoreTest {
     otpStore.verifyOtp("testKey", "654321"); // Fail once
 
     otpStore.storeOtp("testKey", "new-otp", 1000);
-    OtpEntry entry = otpStore.getOtpEntry("testKey");
+    Otp entry = otpStore.getOtpEntry("testKey");
     assertEquals(0, entry.failedAttempts);
   }
 

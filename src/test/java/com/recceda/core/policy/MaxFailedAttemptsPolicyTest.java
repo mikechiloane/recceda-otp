@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import com.recceda.core.store.OtpStore;
-import com.recceda.core.store.reccedda.ReccedaOtpStore.OtpEntry;
+import com.recceda.core.store.reccedda.ReccedaOtpStore.Otp;
 import com.recceda.exception.OtpGenerationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ class MaxFailedAttemptsPolicyTest {
     // Given
     String key = "test-user";
     MaxFailedAttemptsPolicy policy = new MaxFailedAttemptsPolicy(3);
-    OtpEntry entry = new OtpEntry("hash", System.currentTimeMillis() + 10000);
+    Otp entry = new Otp("hash", System.currentTimeMillis() + 10000);
     entry.failedAttempts = 3;
     when(otpStore.getOtpEntry(key)).thenReturn(entry);
 
@@ -39,7 +39,7 @@ class MaxFailedAttemptsPolicyTest {
     // Given
     String key = "test-user";
     MaxFailedAttemptsPolicy policy = new MaxFailedAttemptsPolicy(3);
-    OtpEntry entry = new OtpEntry("hash", System.currentTimeMillis() + 10000);
+    Otp entry = new Otp("hash", System.currentTimeMillis() + 10000);
     entry.failedAttempts = 2;
     when(otpStore.getOtpEntry(key)).thenReturn(entry);
 

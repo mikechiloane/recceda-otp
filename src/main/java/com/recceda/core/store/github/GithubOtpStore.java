@@ -11,9 +11,9 @@ import com.recceda.http.github.GithubClient;
 import com.recceda.http.requests.file.CreateFileRequest;
 import com.recceda.http.requests.file.DeleteFileRequest;
 import com.recceda.http.requests.repository.CreateRepositoryRequest;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.util.concurrent.ExecutionException;
@@ -38,7 +38,7 @@ public class GithubOtpStore implements OtpStore {
 
     @Override
     public void storeOtp(String key, String otp, long ttlMillis) {
-        OtpEntry otpEntry = new OtpEntry(key, otp);
+        OtpEntry otpEntry = OtpEntry.builder().key(key).otp(otp).build();
         try {
             fileAction.createFile(this.createFileRequestForOtp(otpEntry), this.repository, this.generateOtpFileName(key));
         } catch (Exception e) {
@@ -58,10 +58,10 @@ public class GithubOtpStore implements OtpStore {
     }
 
     @Override
-    public ReccedaOtpStore.OtpEntry getOtpEntry(String key) {
+    public ReccedaOtpStore.Otp getOtpEntry(String key) {
         try {
             OtpEntry otpEntry = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key), OtpEntry.class);
-            return new ReccedaOtpStore.OtpEntry(otpEntry.otp, 0);
+            return new ReccedaOtpStore.Otp(otpEntry.otp, 0);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -111,9 +111,9 @@ public class GithubOtpStore implements OtpStore {
         return "otp_" + key + ".json";
     }
 
-    @AllArgsConstructor
     @Getter
     @NoArgsConstructor
+    @SuperBuilder
     public static class OtpEntry {
         private String key;
         private String otp;

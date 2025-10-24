@@ -1,6 +1,6 @@
 package com.recceda.core.store;
 
-import com.recceda.core.store.reccedda.ReccedaOtpStore.OtpEntry;
+import com.recceda.core.store.reccedda.ReccedaOtpStore.Otp;
 
 /**
  * An interface for storing, verifying, and managing OTPs.
@@ -31,9 +31,9 @@ public interface OtpStore {
    * Retrieves the OTP entry for the specified key.
    *
    * @param key the unique key associated with the OTP.
-   * @return the {@link OtpEntry} if it exists, or {@code null} otherwise.
+   * @return the {@link Otp} if it exists, or {@code null} otherwise.
    */
-  OtpEntry getOtpEntry(String key);
+  Otp getOtpEntry(String key);
 
   /**
    * Invalidates the current OTP for the specified key.

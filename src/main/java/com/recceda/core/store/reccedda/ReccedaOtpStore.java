@@ -20,31 +20,31 @@ import java.util.concurrent.TimeUnit;
  */
 public class ReccedaOtpStore implements OtpStore {
 
-  private final Cache<String, OtpEntry> otpMap;
+  private final Cache<String, Otp> otpMap;
 
   /**
    * Creates a new {@code ReccedaOtpStore} with the default expiry policy.
    *
-   * <p>The default policy expires entries based on the `expiryTime` in the {@link OtpEntry}.
+   * <p>The default policy expires entries based on the `expiryTime` in the {@link Otp}.
    */
   public ReccedaOtpStore() {
     this(
-        new Expiry<String, OtpEntry>() {
+        new Expiry<String, Otp>() {
           @Override
-          public long expireAfterCreate(String key, OtpEntry value, long currentTime) {
+          public long expireAfterCreate(String key, Otp value, long currentTime) {
             long millis = value.expiryTime - System.currentTimeMillis();
             return TimeUnit.MILLISECONDS.toNanos(millis);
           }
 
           @Override
           public long expireAfterUpdate(
-              String key, OtpEntry value, long currentTime, long currentDuration) {
+                  String key, Otp value, long currentTime, long currentDuration) {
             return currentDuration;
           }
 
           @Override
           public long expireAfterRead(
-              String key, OtpEntry value, long currentTime, long currentDuration) {
+                  String key, Otp value, long currentTime, long currentDuration) {
             return currentDuration;
           }
         });
@@ -55,7 +55,7 @@ public class ReccedaOtpStore implements OtpStore {
    *
    * @param expiry the custom expiry policy to use for the Caffeine cache.
    */
-  public ReccedaOtpStore(Expiry<String, OtpEntry> expiry) {
+  public ReccedaOtpStore(Expiry<String, Otp> expiry) {
     this.otpMap = Caffeine.newBuilder().expireAfter(expiry).build();
   }
 
@@ -63,12 +63,12 @@ public class ReccedaOtpStore implements OtpStore {
   public void storeOtp(String key, String otp, long ttlMillis) {
     long expiryTime = System.currentTimeMillis() + ttlMillis;
     String otpHash = hashOtp(otp);
-    otpMap.put(key, new OtpEntry(otpHash, expiryTime));
+    otpMap.put(key, new Otp(otpHash, expiryTime));
   }
 
   @Override
   public boolean verifyOtp(String key, String otp) {
-    OtpEntry entry = otpMap.getIfPresent(key);
+    Otp entry = otpMap.getIfPresent(key);
     if (entry == null) {
       return false;
     }
@@ -83,7 +83,7 @@ public class ReccedaOtpStore implements OtpStore {
   }
 
   @Override
-  public OtpEntry getOtpEntry(String key) {
+  public Otp getOtpEntry(String key) {
     return otpMap.getIfPresent(key);
   }
 
@@ -102,14 +102,14 @@ public class ReccedaOtpStore implements OtpStore {
     }
   }
 
-  public static class OtpEntry {
+  public static class Otp {
     public String otpHash;
     public long expiryTime;
     public int failedAttempts;
 
-    public OtpEntry() {}
+    public Otp() {}
 
-    public OtpEntry(String otpHash, long expiryTime) {
+    public Otp(String otpHash, long expiryTime) {
       this.otpHash = otpHash;
       this.expiryTime = expiryTime;
       this.failedAttempts = 0;
