@@ -51,8 +51,8 @@ public class GithubOtpStore implements OtpStore {
                     generateOtpFileName(key), OtpEntry.class);
 
             String otpHash = HashingUtil.hashOtp(plainOtp);
-            String Otp = otp.getOtpHash();
-            if (!otpHash.equals(Otp)) {
+            String otpHashFromStore = otp.getOtpHash();
+            if (!otpHash.equals(otpHashFromStore)) {
                 String sha = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key)).getSha();
                 otp.setFailedAttempts(otp.getFailedAttempts() + 1);
                 CreateFileRequest newUpdateReqeust = this.createFileRequestForOtp(otp);
@@ -61,7 +61,7 @@ public class GithubOtpStore implements OtpStore {
                 return false;
             }
 
-            return Otp.otp.equals(otp);
+            return true;
         } catch (Exception e) {
             return false;
         }
@@ -96,13 +96,13 @@ public class GithubOtpStore implements OtpStore {
     }
 
 
-    private CreateFileRequest createFileRequestForOtp(OtpEntry Otp) throws JsonProcessingException {
-        String message = LocalDate.now() + " " + this.otpStoreName + " " + Otp.key;
+    private CreateFileRequest createFileRequestForOtp(OtpEntry otpEntry) throws JsonProcessingException {
+        String message = LocalDate.now() + " " + this.otpStoreName + " " + otpEntry.getKey();
         Committer committer = Committer.builder()
                 .name(this.getClass().getName())
                 .email("test@example.com").build();
 
-        return new CreateFileRequest(Otp, committer, message);
+        return new CreateFileRequest(otpEntry, committer, message);
     }
 
     private DeleteFileRequest createDeleteFileRequest(String key, String sha) throws JsonProcessingException {
