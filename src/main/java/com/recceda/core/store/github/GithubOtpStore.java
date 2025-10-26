@@ -72,7 +72,7 @@ public class GithubOtpStore implements OtpStore {
         try {
             return fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key), OtpEntry.class);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 
