@@ -75,7 +75,11 @@
                             <version>1.18.38</version>
                         </path>
                     </annotationProcessorPaths>
+                    <testExcludes>
+                        <exclude>com/recceda/core/store/github/**</exclude>
+                    </testExcludes>
                 </configuration>
+
             </plugin>
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
