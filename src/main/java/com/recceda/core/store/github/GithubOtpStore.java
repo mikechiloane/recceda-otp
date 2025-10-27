@@ -21,16 +21,13 @@ public class GithubOtpStore implements OtpStore {
     private final RepositoryAction repositoryAction;
     private final FileAction fileAction;
     private final Repository repository;
-    private final String otpStoreName;
 
     public GithubOtpStore(String githubToken, String otpStoreName) throws ExecutionException, InterruptedException, JsonProcessingException {
-        this.otpStoreName = otpStoreName;
+
         GithubClient githubClient = new GithubClient(githubToken);
         this.repositoryAction = new RepositoryAction(githubClient);
         this.fileAction = new FileAction(githubClient);
-
         this.repository = this.repositoryAction.createRepositoryForAuthenticatedUser(this.createOtpRepository(otpStoreName));
-
     }
 
     @Override
@@ -88,7 +85,7 @@ public class GithubOtpStore implements OtpStore {
     private CreateRepositoryRequest createOtpRepository(String otpStoreName) {
         return CreateRepositoryRequest.builder()
                 .description("Recceda Otp Repository")
-                .name(this.otpStoreName)
+                .name(otpStoreName)
                 .isPrivate(true)
                 .isTemplate(false)
                 .build();
@@ -96,7 +93,7 @@ public class GithubOtpStore implements OtpStore {
 
 
     private CreateFileRequest createFileRequestForOtp(OtpEntry otpEntry) throws JsonProcessingException {
-        String message = LocalDate.now() + " " + this.otpStoreName + " " + otpEntry.getKey();
+        String message = LocalDate.now() + " " + " " + otpEntry.getKey();
         Committer committer = Committer.builder()
                 .name(this.getClass().getName())
                 .email("test@example.com").build();
@@ -105,7 +102,7 @@ public class GithubOtpStore implements OtpStore {
     }
 
     private DeleteFileRequest createDeleteFileRequest(String key, String sha) throws JsonProcessingException {
-        String message = LocalDate.now() + " " + this.otpStoreName + " " + key
+        String message = LocalDate.now() + " " + " " + key
                 + " deleted";
         Committer committer = Committer.builder()
                 .name(this.getClass().getName())
