@@ -35,8 +35,7 @@ public class GithubOtpStore implements OtpStore {
 
     @Override
     public void storeOtp(String key, String plainOtp, long ttlMillis) {
-        OtpEntry otp = OtpEntry.builder().otpHash(HashingUtil.hashOtp(plainOtp)).failedAttempts(0).key(key).build();
-
+        OtpEntry otp = OtpEntry.builder().otpHash(HashingUtil.hashOtp(plainOtp)).expiryTime(System.currentTimeMillis() + ttlMillis).failedAttempts(0).key(key).build();
         try {
             fileAction.createFile(this.createFileRequestForOtp(otp), this.repository, this.generateOtpFileName(key));
         } catch (Exception e) {
