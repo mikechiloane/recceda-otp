@@ -53,37 +53,35 @@ public class ReccedaOtp {
   }
 
   /**
-   * Generates a new OTP with default settings (6 digits, 5-minute validity) and sends it to the
-   * user via the provided distributor.
+   * Generates a new OTP with default settings and sends it to the user via the provided distributor.
    *
    * @param key the unique key to associate with the OTP (e.g., user ID, email address).
    * @param distributor the distributor to use for sending the OTP.
    */
   public void generateOtp(String key, OtpDistributor distributor) {
-    generateOtp(key, 6, 5 * 60 * 1000, distributor);
+    generateOtp(key, OtpConfig.builder().build(), distributor);
   }
 
   private static final int MIN_OTP_LENGTH = 6;
 
   /**
-   * Generates a new OTP with the specified length and time-to-live (TTL) and sends it to the user
-   * via the provided distributor.
+   * Generates a new OTP with the specified configuration and sends it to the user via the provided
+   * distributor.
    *
    * @param key the unique key to associate with the OTP (e.g., user ID, email address).
-   * @param length the length of the OTP to generate.
-   * @param ttlMillis the time-to-live for the OTP in milliseconds.
+   * @param config the OTP configuration.
    * @param distributor the distributor to use for sending the OTP.
    */
-  public void generateOtp(String key, int length, long ttlMillis, OtpDistributor distributor) {
-    if (length < MIN_OTP_LENGTH) {
+  public void generateOtp(String key, OtpConfig config, OtpDistributor distributor) {
+    if (config.getLength() < MIN_OTP_LENGTH) {
       throw new IllegalArgumentException("OTP length must be at least " + MIN_OTP_LENGTH);
     }
     for (Policy policy : policies) {
       policy.check(key, otpStore);
     }
 
-    String otp = otpGenerator.generateOtp(length);
-    otpStore.storeOtp(key, otp, ttlMillis);
+    String otp = otpGenerator.generateOtp(config.getLength());
+    otpStore.storeOtp(key, otp, config.getTtlMillis());
     distributor.send(key, otp);
   }
 
