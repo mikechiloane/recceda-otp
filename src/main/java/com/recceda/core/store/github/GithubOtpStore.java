@@ -89,7 +89,7 @@ public class GithubOtpStore implements OtpStore {
         return CreateRepositoryRequest.builder()
                 .description("Recceda Otp Repository")
                 .name(this.otpStoreName)
-                .isPrivate(false)
+                .isPrivate(true)
                 .isTemplate(false)
                 .build();
     }
