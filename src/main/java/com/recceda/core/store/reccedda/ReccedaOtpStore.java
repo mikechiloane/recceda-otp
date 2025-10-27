@@ -7,6 +7,7 @@ import com.recceda.OtpEntry;
 import com.recceda.core.store.OtpStore;
 import com.recceda.core.util.HashingUtil;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,17 +59,18 @@ public class ReccedaOtpStore implements OtpStore {
     }
 
     @Override
-    public void storeOtp(String key, String otp, long ttlMillis) {
+    public CompletableFuture<Void> storeOtp(String key, String otp, long ttlMillis) {
         long expiryTime = System.currentTimeMillis() + ttlMillis;
         String otpHash = HashingUtil.hashOtp(otp);
         otpMap.put(key, OtpEntry.builder().key(key).otpHash(otpHash).expiryTime(expiryTime).failedAttempts(0).build());
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override
-    public boolean verifyOtp(String key, String otp) {
+    public CompletableFuture<Boolean> verifyOtp(String key, String otp) {
         OtpEntry entry = otpMap.getIfPresent(key);
         if (entry == null) {
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
 
         String otpHash = HashingUtil.hashOtp(otp);
@@ -77,17 +79,18 @@ public class ReccedaOtpStore implements OtpStore {
             entry.setFailedAttempts(entry.getFailedAttempts() + 1);
             otpMap.put(key, entry);
         }
-        return isValid;
+        return CompletableFuture.completedFuture(isValid);
     }
 
     @Override
-    public OtpEntry getOtpEntry(String key) {
-        return otpMap.getIfPresent(key);
+    public CompletableFuture<OtpEntry> getOtpEntry(String key) {
+        return CompletableFuture.completedFuture(otpMap.getIfPresent(key));
     }
 
     @Override
-    public void invalidateOtp(String key) {
+    public CompletableFuture<Void> invalidateOtp(String key) {
         otpMap.invalidate(key);
+        return CompletableFuture.completedFuture(null);
     }
 
 

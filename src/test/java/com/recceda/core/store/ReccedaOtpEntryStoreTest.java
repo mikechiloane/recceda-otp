@@ -19,19 +19,19 @@ class ReccedaOtpEntryStoreTest {
     @Test
     void testStoreAndVerifyOtp() {
         otpStore.storeOtp("testKey", "123456", 1000);
-        assertTrue(otpStore.verifyOtp("testKey", "123456"));
+        assertTrue(otpStore.verifyOtp("testKey", "123456").join());
     }
 
     @Test
     void testVerifyIncorrectOtpIncrementsFailedAttempts() {
         otpStore.storeOtp("testKey", "123456", 1000);
-        assertFalse(otpStore.verifyOtp("testKey", "654321"));
+        assertFalse(otpStore.verifyOtp("testKey", "654321").join());
 
-        OtpEntry entry = otpStore.getOtpEntry("testKey");
+        OtpEntry entry = otpStore.getOtpEntry("testKey").join();
         assertEquals(1, entry.getFailedAttempts());
 
-        assertFalse(otpStore.verifyOtp("testKey", "000000"));
-        entry = otpStore.getOtpEntry("testKey");
+        assertFalse(otpStore.verifyOtp("testKey", "000000").join());
+        entry = otpStore.getOtpEntry("testKey").join();
         assertEquals(2, entry.getFailedAttempts());
     }
 
@@ -41,7 +41,7 @@ class ReccedaOtpEntryStoreTest {
         otpStore.verifyOtp("testKey", "654321"); // Fail once
 
         otpStore.storeOtp("testKey", "new-otp", 1000);
-        OtpEntry entry = otpStore.getOtpEntry("testKey");
+        OtpEntry entry = otpStore.getOtpEntry("testKey").join();
         assertEquals(0, entry.getFailedAttempts());
     }
 
@@ -49,13 +49,13 @@ class ReccedaOtpEntryStoreTest {
     void testVerifyExpiredOtp() throws InterruptedException {
         otpStore.storeOtp("testKey", "123456", 1);
         Thread.sleep(10);
-        assertFalse(otpStore.verifyOtp("testKey", "123456"));
+        assertFalse(otpStore.verifyOtp("testKey", "123456").join());
     }
 
     @Test
     void testInvalidateOtp() {
         otpStore.storeOtp("testKey", "123456", 1000);
         otpStore.invalidateOtp("testKey");
-        assertFalse(otpStore.verifyOtp("testKey", "123456"));
+        assertFalse(otpStore.verifyOtp("testKey", "123456").join());
     }
 }
