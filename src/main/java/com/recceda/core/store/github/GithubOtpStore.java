@@ -51,7 +51,7 @@ public class GithubOtpStore implements OtpStore {
 
             String otpHash = HashingUtil.hashOtp(plainOtp);
             String otpHashFromStore = otp.getOtpHash();
-            if (!otpHash.equals(otpHashFromStore)) {
+            if (!otpHash.equals(otpHashFromStore) || System.currentTimeMillis() > otp.getExpiryTime()) {
                 String sha = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key)).getSha();
                 otp.setFailedAttempts(otp.getFailedAttempts() + 1);
                 CreateFileRequest newUpdateReqeust = this.createFileRequestForOtp(otp);

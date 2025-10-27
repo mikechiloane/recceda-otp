@@ -1,7 +1,8 @@
 package com.recceda.core.store.github;
 
 import com.recceda.ReccedaOtp;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.Random;
@@ -10,19 +11,23 @@ import java.util.concurrent.atomic.AtomicReference;
 class GithubOtpEntryStoreTest {
 
     @Test
-    void e2eWithReccedaOtp() throws  Exception{
+    void e2eWithReccedaOtp() throws Exception {
         String str = "astro-" + String.valueOf(new Random().nextInt(1000));
         GithubOtpStore githubOtpStore = new GithubOtpStore(System.getenv("API_TOKEN"), str);
         ReccedaOtp reccedaOtp = new ReccedaOtp(githubOtpStore);
-        AtomicReference<String> otp = new  AtomicReference<>();
+        AtomicReference<String> otp = new AtomicReference<>();
         AtomicReference<String> key = new AtomicReference<>();
-        reccedaOtp.generateOtp("test-user",10, Duration.ofMillis(10).toMillis(), (k, o) -> {
+        reccedaOtp.generateOtp("test-user", 10, Duration.ofMinutes(1).toMillis(), (k, o) -> {
             otp.set(o);
             key.set(k);
-            System.out.println(k + " " + o);
         });
-        Thread.sleep(20);
-        Assertions.assertTrue(reccedaOtp.verifyOtp(key.get(),otp.get()));
+        Assertions.assertTrue(reccedaOtp.verifyOtp(key.get(), otp.get()));
+
+        reccedaOtp.generateOtp("test-user-2", 10, Duration.ofMillis(1).toMillis(), (k, o) -> {
+            otp.set(o);
+            key.set(k);
+        });
+        Assertions.assertFalse(reccedaOtp.verifyOtp(key.get(), otp.get()));
     }
 
     @Test
