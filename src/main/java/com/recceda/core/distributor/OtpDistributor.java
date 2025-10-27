@@ -1,5 +1,7 @@
 package com.recceda.core.distributor;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * A functional interface for sending an OTP to a user.
  *
@@ -14,5 +16,5 @@ public interface OtpDistributor {
    * @param key the unique key associated with the user (e.g., user ID, email address).
    * @param otp the OTP to send.
    */
-  void send(String key, String otp);
+  CompletableFuture<Void> send(String key, String otp);
 }

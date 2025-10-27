@@ -60,7 +60,6 @@ public class ReccedaOtp {
    * @param distributor the distributor to use for sending the OTP.
    */
   public void generateOtp(String key, OtpDistributor distributor) {
-    // Default to a 6-digit OTP with a 5-minute validity
     generateOtp(key, 6, 5 * 60 * 1000, distributor);
   }
 
