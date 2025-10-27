@@ -14,6 +14,7 @@ import com.recceda.http.requests.file.DeleteFileRequest;
 import com.recceda.http.requests.repository.CreateRepositoryRequest;
 
 import java.time.LocalDate;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class GithubOtpStore implements OtpStore {
@@ -31,53 +32,61 @@ public class GithubOtpStore implements OtpStore {
     }
 
     @Override
-    public void storeOtp(String key, String plainOtp, long ttlMillis) {
-        OtpEntry otp = OtpEntry.builder().otpHash(HashingUtil.hashOtp(plainOtp)).expiryTime(System.currentTimeMillis() + ttlMillis).failedAttempts(0).key(key).build();
-        try {
-            fileAction.createFile(this.createFileRequestForOtp(otp), this.repository, this.generateOtpFileName(key));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public CompletableFuture<Void> storeOtp(String key, String plainOtp, long ttlMillis) {
+        return CompletableFuture.runAsync(() -> {
+            OtpEntry otp = OtpEntry.builder().otpHash(HashingUtil.hashOtp(plainOtp)).expiryTime(System.currentTimeMillis() + ttlMillis).failedAttempts(0).key(key).build();
+            try {
+                fileAction.createFile(this.createFileRequestForOtp(otp), this.repository, this.generateOtpFileName(key));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
-    public boolean verifyOtp(String key, String plainOtp) {
-        try {
-            OtpEntry otp = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.
-                    generateOtpFileName(key), OtpEntry.class);
-            String otpHash = HashingUtil.hashOtp(plainOtp);
-            String otpHashFromStore = otp.getOtpHash();
-            if (!otpHash.equals(otpHashFromStore) || System.currentTimeMillis() > otp.getExpiryTime()) {
-                String sha = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key)).getSha();
-                otp.setFailedAttempts(otp.getFailedAttempts() + 1);
-                CreateFileRequest newUpdateReqeust = this.createFileRequestForOtp(otp);
-                newUpdateReqeust.setSha(sha);
-                fileAction.updateFile(newUpdateReqeust, repository.getOwner().getLogin(), repository.getName(), this.generateOtpFileName(key));
+    public CompletableFuture<Boolean> verifyOtp(String key, String plainOtp) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                OtpEntry otp = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.
+                        generateOtpFileName(key), OtpEntry.class);
+                String otpHash = HashingUtil.hashOtp(plainOtp);
+                String otpHashFromStore = otp.getOtpHash();
+                if (!otpHash.equals(otpHashFromStore) || System.currentTimeMillis() > otp.getExpiryTime()) {
+                    String sha = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key)).getSha();
+                    otp.setFailedAttempts(otp.getFailedAttempts() + 1);
+                    CreateFileRequest newUpdateReqeust = this.createFileRequestForOtp(otp);
+                    newUpdateReqeust.setSha(sha);
+                    fileAction.updateFile(newUpdateReqeust, repository.getOwner().getLogin(), repository.getName(), this.generateOtpFileName(key));
+                    return false;
+                }
+                return true;
+            } catch (Exception e) {
                 return false;
             }
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        });
     }
 
     @Override
-    public OtpEntry getOtpEntry(String key) {
-        try {
-            return fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key), OtpEntry.class);
-        } catch (Exception e) {
-            return null;
-        }
+    public CompletableFuture<OtpEntry> getOtpEntry(String key) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key), OtpEntry.class);
+            } catch (Exception e) {
+                return null;
+            }
+        });
     }
 
     @Override
-    public void invalidateOtp(String key) {
-        try {
-            String sha = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key)).getSha();
-            fileAction.deleteFile(this.createDeleteFileRequest(key, sha), this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public CompletableFuture<Void> invalidateOtp(String key) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                String sha = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key)).getSha();
+                fileAction.deleteFile(this.createDeleteFileRequest(key, sha), this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private CreateRepositoryRequest createOtpRepository(String otpStoreName) {

@@ -5,8 +5,10 @@ import com.recceda.core.generator.OtpGenerator;
 import com.recceda.core.generator.ReccedaOtpGenerator;
 import com.recceda.core.policy.Policy;
 import com.recceda.core.store.OtpStore;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The main class for generating and verifying OTPs.
@@ -19,6 +21,7 @@ public class ReccedaOtp {
   private final OtpGenerator otpGenerator;
   private final OtpStore otpStore;
   private final List<Policy> policies;
+  private static final int MIN_OTP_LENGTH = 6;
 
   /**
    * Creates a new {@code ReccedaOtp} with the default OTP generator and no policies.
@@ -57,12 +60,11 @@ public class ReccedaOtp {
    *
    * @param key the unique key to associate with the OTP (e.g., user ID, email address).
    * @param distributor the distributor to use for sending the OTP.
+   * @return a {@link CompletableFuture} that completes when the OTP has been sent.
    */
-  public void generateOtp(String key, OtpDistributor distributor) {
-    generateOtp(key, OtpConfig.builder().build(), distributor);
+  public CompletableFuture<Void> generateOtp(String key, OtpDistributor distributor) {
+    return generateOtp(key, OtpConfig.builder().build(), distributor);
   }
-
-  private static final int MIN_OTP_LENGTH = 6;
 
   /**
    * Generates a new OTP with the specified configuration and sends it to the user via the provided
@@ -71,18 +73,22 @@ public class ReccedaOtp {
    * @param key the unique key to associate with the OTP (e.g., user ID, email address).
    * @param config the OTP configuration.
    * @param distributor the distributor to use for sending the OTP.
+   * @return a {@link CompletableFuture} that completes when the OTP has been sent.
    */
-  public void generateOtp(String key, OtpConfig config, OtpDistributor distributor) {
+  public CompletableFuture<Void> generateOtp(String key, OtpConfig config, OtpDistributor distributor) {
     if (config.getLength() < MIN_OTP_LENGTH) {
       throw new IllegalArgumentException("OTP length must be at least " + MIN_OTP_LENGTH);
     }
-    for (Policy policy : policies) {
-      policy.check(key, otpStore);
-    }
 
-    String otp = otpGenerator.generateOtp(config.getLength());
-    otpStore.storeOtp(key, otp, config.getTtlMillis());
-    distributor.send(key, otp);
+    CompletableFuture<Void> policyChecks = CompletableFuture.allOf(policies.stream()
+            .map(policy -> policy.check(key, otpStore))
+            .toArray(CompletableFuture[]::new));
+
+    return policyChecks.thenCompose(v -> {
+      String otp = otpGenerator.generateOtp(config.getLength());
+      return otpStore.storeOtp(key, otp, config.getTtlMillis())
+              .thenCompose(v2 -> distributor.send(key, otp));
+    });
   }
 
   /**
@@ -90,9 +96,10 @@ public class ReccedaOtp {
    *
    * @param key the unique key associated with the OTP.
    * @param otp the OTP to verify.
-   * @return {@code true} if the OTP is valid, {@code false} otherwise.
+   * @return a {@link CompletableFuture} that completes with {@code true} if the OTP is valid, or
+   *     {@code false} otherwise.
    */
-  public boolean verifyOtp(String key, String otp) {
+  public CompletableFuture<Boolean> verifyOtp(String key, String otp) {
     return otpStore.verifyOtp(key, otp);
   }
 
@@ -100,8 +107,9 @@ public class ReccedaOtp {
    * Invalidates the current OTP for the specified key.
    *
    * @param key the unique key associated with the OTP.
+   * @return a {@link CompletableFuture} that completes when the OTP has been invalidated.
    */
-  public void invalidateOtp(String key) {
-    otpStore.invalidateOtp(key);
+  public CompletableFuture<Void> invalidateOtp(String key) {
+    return otpStore.invalidateOtp(key);
   }
 }
