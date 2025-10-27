@@ -25,8 +25,7 @@ public class MaxFailedAttemptsPolicy implements Policy {
   public void check(String key, OtpStore store) {
     OtpEntry entry = store.getOtpEntry(key);
     if (entry != null && entry.getFailedAttempts() >= maxAttempts) {
-      throw new OtpGenerationException(
-          "User has exceeded the maximum number of failed OTP attempts.");
+      throw new OtpGenerationException("OTP generation failed due to a policy violation.");
     }
   }
 }

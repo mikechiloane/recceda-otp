@@ -63,6 +63,8 @@ public class ReccedaOtp {
     generateOtp(key, 6, 5 * 60 * 1000, distributor);
   }
 
+  private static final int MIN_OTP_LENGTH = 6;
+
   /**
    * Generates a new OTP with the specified length and time-to-live (TTL) and sends it to the user
    * via the provided distributor.
@@ -73,6 +75,9 @@ public class ReccedaOtp {
    * @param distributor the distributor to use for sending the OTP.
    */
   public void generateOtp(String key, int length, long ttlMillis, OtpDistributor distributor) {
+    if (length < MIN_OTP_LENGTH) {
+      throw new IllegalArgumentException("OTP length must be at least " + MIN_OTP_LENGTH);
+    }
     for (Policy policy : policies) {
       policy.check(key, otpStore);
     }
