@@ -83,7 +83,6 @@ public class GithubOtpStore implements OtpStore {
             try {
                 String sha = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key)).getSha();
                 fileAction.deleteFile(this.createDeleteFileRequest(key, sha), this.repository.getOwner().getLogin(), this.repository.getName(), this.generateOtpFileName(key));
-                return CompletableFuture.completedFuture(null);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
