@@ -45,7 +45,6 @@ public class GithubOtpStore implements OtpStore {
         try {
             OtpEntry otp = fileAction.getFileContents(this.repository.getOwner().getLogin(), this.repository.getName(), this.
                     generateOtpFileName(key), OtpEntry.class);
-
             String otpHash = HashingUtil.hashOtp(plainOtp);
             String otpHashFromStore = otp.getOtpHash();
             if (!otpHash.equals(otpHashFromStore) || System.currentTimeMillis() > otp.getExpiryTime()) {
@@ -56,7 +55,6 @@ public class GithubOtpStore implements OtpStore {
                 fileAction.updateFile(newUpdateReqeust, repository.getOwner().getLogin(), repository.getName(), this.generateOtpFileName(key));
                 return false;
             }
-
             return true;
         } catch (Exception e) {
             return false;

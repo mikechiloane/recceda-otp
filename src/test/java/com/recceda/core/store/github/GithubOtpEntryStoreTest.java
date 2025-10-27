@@ -22,7 +22,6 @@ class GithubOtpEntryStoreTest {
             key.set(k);
         });
         Assertions.assertTrue(reccedaOtp.verifyOtp(key.get(), otp.get()));
-
         reccedaOtp.generateOtp("test-user-2", 10, Duration.ofMillis(1).toMillis(), (k, o) -> {
             otp.set(o);
             key.set(k);
