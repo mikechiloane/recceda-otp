@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.concurrent.CompletableFuture;
+
 @ExtendWith(MockitoExtension.class)
 class MaxFailedAttemptsPolicyTest {
 
@@ -24,7 +26,7 @@ class MaxFailedAttemptsPolicyTest {
     MaxFailedAttemptsPolicy policy = new MaxFailedAttemptsPolicy(3);
     OtpEntry entry = OtpEntry.builder().key(key).failedAttempts(3).expiryTime(1000).build();
 
-    when(otpStore.getOtpEntry(key)).thenReturn(entry);
+    when(otpStore.getOtpEntry(key)).thenReturn(CompletableFuture.completedFuture(entry));
 
     // Then
     assertThrows(
@@ -40,7 +42,8 @@ class MaxFailedAttemptsPolicyTest {
     String key = "test-user";
     MaxFailedAttemptsPolicy policy = new MaxFailedAttemptsPolicy(3);
     OtpEntry entry = OtpEntry.builder().key(key).failedAttempts(2).expiryTime(1000).build();
-    when(otpStore.getOtpEntry(key)).thenReturn(entry);
+
+    when(otpStore.getOtpEntry(key)).thenReturn(CompletableFuture.completedFuture(entry));
 
     // Then
     assertDoesNotThrow(

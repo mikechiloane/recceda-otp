@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.concurrent.CompletableFuture;
+
 @ExtendWith(MockitoExtension.class)
 class PreventDuplicateOtpEntryPolicyTest {
 
@@ -25,7 +27,8 @@ class PreventDuplicateOtpEntryPolicyTest {
     String key = "test-user";
     OtpEntry activeEntry =
         OtpEntry.builder().key(key).expiryTime(System.currentTimeMillis() + 10000).build();
-    when(otpStore.getOtpEntry(key)).thenReturn(activeEntry);
+
+    when(otpStore.getOtpEntry(key)).thenReturn(CompletableFuture.completedFuture(activeEntry));
 
     // Then
     assertThrows(
@@ -54,7 +57,7 @@ class PreventDuplicateOtpEntryPolicyTest {
     String key = "test-user";
     OtpEntry expiredEntry =
         OtpEntry.builder().key(key).expiryTime(System.currentTimeMillis() - 10000).build();
-    when(otpStore.getOtpEntry(key)).thenReturn(expiredEntry);
+    when(otpStore.getOtpEntry(key)).thenReturn(CompletableFuture.completedFuture(expiredEntry));
 
     // Then
     assertDoesNotThrow(
