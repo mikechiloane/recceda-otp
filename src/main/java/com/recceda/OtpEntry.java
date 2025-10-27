@@ -10,10 +10,8 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class OtpEntry {
 
-    private String key;
-    private String otpHash;
-    private long expiryTime;
-    @Setter
-    private int failedAttempts;
-
+  private String key;
+  private String otpHash;
+  private long expiryTime;
+  @Setter private int failedAttempts;
 }

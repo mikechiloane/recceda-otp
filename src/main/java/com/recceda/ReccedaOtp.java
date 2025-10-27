@@ -5,7 +5,6 @@ import com.recceda.core.generator.OtpGenerator;
 import com.recceda.core.generator.ReccedaOtpGenerator;
 import com.recceda.core.policy.Policy;
 import com.recceda.core.store.OtpStore;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -56,7 +55,8 @@ public class ReccedaOtp {
   }
 
   /**
-   * Generates a new OTP with default settings and sends it to the user via the provided distributor.
+   * Generates a new OTP with default settings and sends it to the user via the provided
+   * distributor.
    *
    * @param key the unique key to associate with the OTP (e.g., user ID, email address).
    * @param distributor the distributor to use for sending the OTP.
@@ -75,20 +75,25 @@ public class ReccedaOtp {
    * @param distributor the distributor to use for sending the OTP.
    * @return a {@link CompletableFuture} that completes when the OTP has been sent.
    */
-  public CompletableFuture<Void> generateOtp(String key, OtpConfig config, OtpDistributor distributor) {
+  public CompletableFuture<Void> generateOtp(
+      String key, OtpConfig config, OtpDistributor distributor) {
     if (config.getLength() < MIN_OTP_LENGTH) {
       throw new IllegalArgumentException("OTP length must be at least " + MIN_OTP_LENGTH);
     }
 
-    CompletableFuture<Void> policyChecks = CompletableFuture.allOf(policies.stream()
-            .map(policy -> policy.check(key, otpStore))
-            .toArray(CompletableFuture[]::new));
+    CompletableFuture<Void> policyChecks =
+        CompletableFuture.allOf(
+            policies.stream()
+                .map(policy -> policy.check(key, otpStore))
+                .toArray(CompletableFuture[]::new));
 
-    return policyChecks.thenCompose(v -> {
-      String otp = otpGenerator.generateOtp(config.getLength());
-      return otpStore.storeOtp(key, otp, config.getTtlMillis())
+    return policyChecks.thenCompose(
+        v -> {
+          String otp = otpGenerator.generateOtp(config.getLength());
+          return otpStore
+              .storeOtp(key, otp, config.getTtlMillis())
               .thenCompose(v2 -> distributor.send(key, otp));
-    });
+        });
   }
 
   /**

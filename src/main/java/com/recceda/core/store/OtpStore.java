@@ -1,8 +1,6 @@
 package com.recceda.core.store;
 
-
 import com.recceda.OtpEntry;
-
 import java.util.concurrent.CompletableFuture;
 
 /**

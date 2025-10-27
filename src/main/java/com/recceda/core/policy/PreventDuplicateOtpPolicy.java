@@ -2,7 +2,6 @@ package com.recceda.core.policy;
 
 import com.recceda.core.store.OtpStore;
 import com.recceda.exception.OtpGenerationException;
-
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -18,7 +17,8 @@ public class PreventDuplicateOtpPolicy implements Policy {
         .thenAccept(
             entry -> {
               if (entry != null && entry.getExpiryTime() > System.currentTimeMillis()) {
-                throw new OtpGenerationException("OTP generation failed due to a policy violation.");
+                throw new OtpGenerationException(
+                    "OTP generation failed due to a policy violation.");
               }
             });
   }

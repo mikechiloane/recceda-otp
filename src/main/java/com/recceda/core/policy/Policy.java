@@ -2,7 +2,6 @@ package com.recceda.core.policy;
 
 import com.recceda.core.store.OtpStore;
 import com.recceda.exception.OtpGenerationException;
-
 import java.util.concurrent.CompletableFuture;
 
 /**
